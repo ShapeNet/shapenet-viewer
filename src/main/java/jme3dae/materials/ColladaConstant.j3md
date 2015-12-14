@@ -1,0 +1,30 @@
+MaterialDef ColladaConstant {
+
+    MaterialParameters {
+	Boolean useEmissiveColor
+	Color emissiveColor
+	Boolean useEmissiveTexture
+	Texture2D emissiveTexture
+	Boolean useReflectiveColor
+	Color reflectiveColor
+	Boolean useReflectiveTexture
+	Texture2D reflectiveTexture
+	Boolean useReflectivity
+	Float reflectivity
+	Boolean useTransparentColor
+	Color transparentColor
+	Boolean useTransparentTexture
+	Texture2D transparentTexture
+	Boolean useIndexOfRefraction
+	Float indexOfRefraction
+    }
+
+    Technique {
+	VertexShader GLSL100: jme3dae/materials/collada_constant.vert
+	FragmentShader GLSL100: jme3dae/materials/collada_constant.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+    }
+}

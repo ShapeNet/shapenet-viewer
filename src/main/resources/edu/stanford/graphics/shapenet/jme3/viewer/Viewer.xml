@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty>
+  <useStyles filename="nifty-default-styles.xml" />
+  <useControls filename="nifty-default-controls.xml" />
+  <controlDefinition name = "loadingbar" controller = "edu.stanford.graphics.shapenet.jme3.viewer.ProgressBarControl">
+    <image filename="Interface/border.png" childLayout="absolute"
+           imageMode="resize:15,2,15,15,15,2,15,2,15,2,15,15">
+      <image id="progressbar" x="0" y="0" filename="Interface/inner.png" width="32px" height="100%"
+             imageMode="resize:15,2,15,15,15,2,15,2,15,2,15,15" />
+    </image>
+  </controlDefinition>
+  <screen id="start" controller="edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+    <layer id="startLayer" backgroundColor="#0000" childLayout="center">
+      <panel id="startPanel" height="90%" width="90%" backgroundColor="#ffffff" align="center" childLayout="center">
+        <text id="startText" text=""
+              font="Interface/Fonts/Default.fnt" color="#000000"
+              width="100%" height="100%" textHAlign="center" wrap="true" />
+      </panel>
+    </layer>
+  </screen>
+  <screen id="error" controller="edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+    <layer id="errorLayer" backgroundColor="#0000" childLayout="center">
+      <panel id="errorPanel" height="90%" width="90%" backgroundColor="#ffffff" align="center" childLayout="center">
+        <text id="errorText" text=""
+              font="Interface/Fonts/Default.fnt" color="#ff0000"
+              width="100%" height="100%" textHAlign="center" wrap="true" />
+      </panel>
+    </layer>
+  </screen>
+  <screen id="blank" controller="edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+  </screen>
+  <screen id="loading" controller = "edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+    <layer id="loadingLayer" childLayout="center" backgroundColor="#ffffff">
+      <panel id="loadingPanel" childLayout="vertical" align="center" valign="center" width="80%" height="32px">
+        <control name="loadingbar" align="center" valign="center" width="80%" height="32px" />
+        <control id="loadingtext" name="label" align="center" color="#000000" width="80%"
+                 text=""/>
+      </panel>
+    </layer>
+  </screen>
+  <screen id="console" controller="edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+    <layer id="consoleLayer" childLayout="center" backgroundColor="#0000">
+    <panel id="consolePanel" childLayout="vertical" align="center" valign="center" width="80%" height="80%">
+      <control id="consoleControl" name="nifty-console" lines="20" align="center" valign="center"/>
+    </panel>
+    </layer>
+  </screen>
+  <screen id="menu" controller="edu.stanford.graphics.shapenet.viewer.ViewerController">
+    <layer id="menuLayer" childLayout="center" backgroundColor="#0000">
+      <panel id="menuPanel" childLayout="vertical" backgroundColor="#f60f" align="center" valign="center"
+             width="35%" height="25%" padding="10px" visibleToMouse="true">
+        <!--<interact onClick="quit()"/>-->
+        <!--<effect>-->
+        <!--<onStartScreen name="move" mode="in" direction="top" length="300" startDelay="0" inherit="true"/>-->
+        <!--<onEndScreen name="move" mode="out" direction="bottom" length="300" startDelay="0" inherit="true"/>-->
+        <!--<onHover name="pulsate" scaleFactor="0.008" startColor="#f600" endColor="#ffff" post="true"/>-->
+        <!--</effect>-->
+        <!--<text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Load" align="left" valign="top" />-->
+        <control id="loadTarget" name="textfield" maxLength="20" width="80%" align="center" valign="center"/>
+        <panel height="10px"/>
+        <control id="loadButton" name="button" label="Load" align="center" valign="center" visibleToMouse="true" >
+          <interact onClick="loadPressed()"/>
+        </control>
+        <panel height="10px"/>
+        <control id="loadRandom" name="button" label="Load Random" align="center" valign="center" visibleToMouse="true" >
+          <interact onClick="loadRandom()"/>
+        </control>
+      </panel>
+    </layer>
+  </screen>
+  <screen id="instructions" controller="edu.stanford.graphics.shapenet.jme3.viewer.ViewerController">
+    <layer id="instLayer" backgroundColor="#0000" childLayout="center">
+      <panel id="instPanel" height="75%" width="75%" backgroundColor="#f60f" align="center" childLayout="center">
+        <text text="
+                    Instructions&#10;
+                    WASDQZ - Move camera Forward/Left/Back/Right/Up/Down&#10;
+                    IJKL - Rotate camera up/left/down/right around target&#10;
+                    Drag+Mouse move or Drag+Arrow - Rotate camera&#10;
+                    Right Click - Select&#10;
+                    Arrow Keys/Page Up/Page Down - Move selected object(s)&#10;
+                    Shift + Arrow Keys - Scale selected object(s)&#10;
+                    Ctrl + Arrow Keys/Page Up/Page Down - Rotate selected object(s)&#10;
+                    Delete - Delete selected object(s).  Slow, uses text2scene!&#10;
+                    H - Toggle highlighting&#10;
+                    X - Toggle wireframe&#10;
+                    C - Clear selected/show camera stats&#10;
+                    R - Reset camera&#10;
+                    T - Save screen shot&#10;
+                    M - Print memory usage&#10;
+                    F1 - Instructions&#10;
+                    F4 - Console&#10;
+                    F5 - Show/hide stats (# of framebuffers, fps, etc)&#10;
+                    CTRL-Q - Quit
+                    "
+              font="Interface/Fonts/Default.fnt"
+              width="100%" height="100%" textHAlign="left" wrap="true" />
+      </panel>
+    </layer>
+  </screen>
+  <screen id="end">
+  </screen>
+</nifty>

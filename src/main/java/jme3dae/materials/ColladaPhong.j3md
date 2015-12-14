@@ -1,0 +1,26 @@
+MaterialDef ColladaPhong {
+
+    MaterialParameters {
+	Boolean useAmbientColor
+	Boolean useDiffuseColor
+	Boolean useEmissiveColor
+	Boolean useAmbientTexture
+	Boolean useDiffuseTexture
+	Boolean useEmissiveTexture
+	Color ambientColor
+	Color diffuseColor
+	Color emissiveColor
+	Texture2D ambientTexture
+	Texture2D diffuseTexture
+	Texture2D emissiveTexture
+    }
+
+    Technique {
+	VertexShader GLSL100: jme3dae/materials/collada_phong.vert
+	FragmentShader GLSL100: jme3dae/materials/collada_phong.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+    }
+}
