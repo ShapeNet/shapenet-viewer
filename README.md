@@ -10,6 +10,7 @@ Compiling on Linux
 ==================
 For compilation on Linux, you will need to have the Oracle Java JDK 1.8 installed.
 You will need to have the following commands on your path: `java`, `make`, `wget`.
+
 Then run `make`.
 
 Running the ShapeNet Viewer
