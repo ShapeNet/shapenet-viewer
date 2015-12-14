@@ -121,7 +121,7 @@ class CategoryTaxonomy(val categoriesFile: String = Constants.CATEGORIES_FILE,
       if (modelsDb != null) {
         if (modelId.isEmpty || "none".equals(modelId)) {
           // Try to sample from our models
-          val candidates = modelsDb.models.values.filter(m => m.source == "wss" && CategoryUtils.hasCategory(m, category))
+          val candidates = modelsDb.getModelInfos("wss", category)
           val sampled = sampler.sampleOne(candidates.toIndexedSeq)
           if (sampled.isDefined) {
             row.update(iModelId, sampled.get.fullId)

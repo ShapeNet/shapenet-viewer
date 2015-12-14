@@ -2,7 +2,7 @@ package edu.stanford.graphics.shapenet.common
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.data.ModelsDb
+import edu.stanford.graphics.shapenet.data.{DataManager, ModelsDb}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -121,7 +121,7 @@ class Scene( // Objects in the scene
     ancestors.toIndexedSeq
   }
 
-  def getMatchingDescendants(inputObjs: Seq[SceneObject], categories: Seq[String])(implicit modelsDb: ModelsDb): Set[Int] = {
+  def getMatchingDescendants(inputObjs: Seq[SceneObject], categories: Seq[String])(implicit dataManager: DataManager): Set[Int] = {
     def filter(x: SceneObject): Boolean = {
       for (c <- categories) {
         if (x.modelInfo != null && x.modelInfo.hasCategoryRelaxed(c).getOrElse(false))
@@ -148,7 +148,7 @@ class Scene( // Objects in the scene
     matching.toSet
   }
 
-  def sceneHierarchyString(implicit modelsDb: ModelsDb): String = {
+  def sceneHierarchyString(implicit dataManager: DataManager): String = {
     def objectString(obj: SceneObject): String = {
       val modelInfo = obj.modelInfo
       val name = if (modelInfo != null) obj.modelInfo.name else "?"
@@ -291,16 +291,16 @@ case class SceneObject(var index: Int,
   def numberOfChildren = if (_childIndices == null) 0 else _childIndices.size
   def hasChildren = numberOfChildren > 0
 
-  def modelInfo(implicit modelsDb: ModelsDb) = {
-    if (modelsDb != null) modelsDb.models.getOrElse(FullId(modelID).fullid, null)
+  def modelInfo(implicit dataManager: DataManager) = {
+    if (dataManager != null) dataManager.getModelInfo(FullId(modelID).fullid).getOrElse(null)
     else null
   }
-  def up(implicit modelsDb: ModelsDb): Vector3f = {
+  def up(implicit dataManager: DataManager): Vector3f = {
     val model = modelInfo
     val up = if (model != null) model.up else null
     if (up != null) up else Constants.DEFAULT_MODEL_UP
   }
-  def front(implicit modelsDb: ModelsDb): Vector3f = {
+  def front(implicit dataManager: DataManager): Vector3f = {
     val model = modelInfo
     val front = if (model != null) model.front else null
     if (front != null) front else Constants.DEFAULT_MODEL_FRONT

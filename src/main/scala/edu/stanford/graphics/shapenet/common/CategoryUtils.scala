@@ -9,7 +9,7 @@ import edu.stanford.graphics.shapenet.util.StringUtils
 object CategoryUtils {
   val ROOT = "ROOT"
   val UNKNOWN = "UNKNOWN"
-  val categoryTaxonomy = new CategoryTaxonomy()
+  lazy val categoryTaxonomy = new CategoryTaxonomy()
 
   def normalize(s: String) = {
     StringUtils.toCamelCase(s)

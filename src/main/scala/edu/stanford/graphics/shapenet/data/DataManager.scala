@@ -1,28 +1,27 @@
 package edu.stanford.graphics.shapenet.data
 
-import edu.stanford.graphics.shapenet.common.ModelInfo
+import edu.stanford.graphics.shapenet.Constants
+import edu.stanford.graphics.shapenet.common.{FullId, ModelInfo}
 
 /**
  * Handles data management
  * @author Angel Chang
  */
-class DataManager {
+class DataManager extends CombinedModelsDb {
   lazy val solrQuerier = new SolrQuerier
-  lazy val modelsDb = {
-    val db = new ModelsDb()
-    db.init()
-    db
-  }
+  lazy val shapeNetCoreModelsDb = registerSolrQueryAsModelsDb(solrQuerier, "datasets:ShapeNetCore")
+  /*lazy*/ val wssModelsDb = registerCsvAsModelsDb(Constants.MODELS3D_CSV_FILE)
 
+  /* Model dbs */
   private def getModelInfoFromSolr(modelId: String): Option[ModelInfo] = {
     solrQuerier.getModelInfo(modelId)
   }
-
-  def getModelInfo(modelId: String): Option[ModelInfo] = {
-    val modelInfo = modelsDb.models.get(modelId)
+  override def getModelInfo(modelId: String): Option[ModelInfo] = {
+    val modelInfo = super.getModelInfo(modelId)
     if (modelInfo.isDefined) modelInfo
     else getModelInfoFromSolr(modelId)
   }
+
 }
 
 object DataManager {

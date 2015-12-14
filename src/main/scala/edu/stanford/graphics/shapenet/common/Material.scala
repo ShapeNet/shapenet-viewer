@@ -1,5 +1,6 @@
 package edu.stanford.graphics.shapenet.models3d
 
+import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.util.CSVFile
 
 import scala.collection.mutable
@@ -12,6 +13,8 @@ case class Material(name: String, density: Double, staticFrictionCoeff: Double) 
 }
 
 object Materials {
+  lazy val materials: Map[String, Material] = Materials.readMaterials(Constants.MATERIAL_DENSITIES_FILE)
+
   def readMaterials(filename: String): Map[String, Material] = {
     val map = new mutable.HashMap[String, Material]()
     val csvfile = new CSVFile(filename, includesHeader = true)

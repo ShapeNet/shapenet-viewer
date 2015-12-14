@@ -53,6 +53,7 @@ class ModelInfo(
 
   // WordNet
   var wnsynset: Array[String] = null
+  var wnhypersynset: Array[String] = null
 
   def hasCategory(c: String): Option[Boolean] = {
     var res: Option[Boolean] = None

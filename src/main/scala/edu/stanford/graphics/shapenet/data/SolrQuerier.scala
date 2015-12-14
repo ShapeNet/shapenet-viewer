@@ -20,11 +20,13 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
   val defaultRandomize: Boolean = false
 
   private def getModelFilterQueries(sources: Seq[String] = modelSources): Seq[String] = {
-    Seq(
+    val s = Seq(
       makeFieldQueryString("+hasModel", "true"),
-      makeFieldQueryString("-category", "_BAD"),
-      makeFieldQueryString("+source", sources, "OR")
+      makeFieldQueryString("-category", "_BAD")
     )
+    if (sources.nonEmpty) {
+      s :+ makeFieldQueryString("+source", sources, "OR")
+    } else s
   }
 
   // Query for models using keywords along with match score
@@ -117,11 +119,13 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
         tags = toStringArray(x.get("tags").asInstanceOf[java.util.List[_]]),
         allCategory = toStringArray(x.get("category").asInstanceOf[java.util.List[_]]),
         category0 = toStringArray(x.get("category0").asInstanceOf[java.util.List[_]]),
+        datasets = toStringArray(x.get("datasets").asInstanceOf[java.util.List[_]]),
         unit0 = toDouble(x.get("unit"), Constants.DEFAULT_MODEL_UNIT),
         up0 = toVector3D(x.get("up").asInstanceOf[java.lang.String]),
         front0 = toVector3D(x.get("front").asInstanceOf[java.lang.String])
       )
       m.wnsynset = toStringArray(x.get("wnsynset").asInstanceOf[java.util.List[_]])
+      m.wnhypersynset = toStringArray(x.get("wnhypersynsets").asInstanceOf[java.util.List[_]])
 //      if (m.source == "3dw" && m.wnsynset != null) {
 //        // Convert from original Shapenet wnsynset to WordNet 3.1
 //        m.wnsynset = m.wnsynset.map( x => WordNet3xSenseMapping.wn30To31("n" + x) ).filter( x => x != null )
@@ -132,14 +136,21 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
 
   def getModelInfo(modelId: String): Option[ModelInfo] = {
     val solrQuery = new SolrQuery( makeFieldQueryString("fullId", modelId) )
-    solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset")
+    solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset", "wnhypersynsets", "datasets")
     val response = modelsServer.query(solrQuery)
     val results = response.getResults()
     solrResultsToModelInfo(results).headOption
   }
 
+  def getModelInfos(solrQueryStr: String): Seq[ModelInfo] = {
+    val solrQuery = new SolrQuery( solrQueryStr )
+    val modelFilterQueries = getModelFilterQueries()
+    solrQuery.setFilterQueries(modelFilterQueries:_*)
+    getModelInfos(solrQuery)
+  }
+
   def getModelInfos(solrQuery: SolrQuery): Seq[ModelInfo] = {
-    solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset")
+    solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset", "datasets")
     val stream = SolrUtils.query(modelsServer, solrQuery)
     solrResultsToModelInfo(stream)
   }

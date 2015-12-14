@@ -2,7 +2,6 @@ package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.common.{CategoryTaxonomy, CategoryUtils, FullId, ModelInfo}
-import edu.stanford.graphics.shapenet.models3d.{Materials, Material}
 import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 import edu.stanford.graphics.shapenet.Constants
 
@@ -12,40 +11,36 @@ import scala.util.Random
  *  Database of 3D models
  *  @author Angel Chang
  */
-class ModelsDb(modelsFile: String = Constants.MODELS3D_CSV_FILE) extends Loggable {
-  var models: Map[String, ModelInfo] = null
-  var categoryTaxonomy: CategoryTaxonomy = null
-  var materials: Map[String, Material] = null
+trait ModelsDb {
+  def getSources(): Set[String]
 
-  def init(useCategoryTaxonomy:Boolean = false,
-           useMaterials:Boolean = false)
-  {
-    categoryTaxonomy = if (useCategoryTaxonomy) {
-      new CategoryTaxonomy()
-    } else  { null }
-    materials = if (useMaterials) {
-      Materials.readMaterials(Constants.MATERIAL_DENSITIES_FILE)
-    } else { null }
-    models = readModelsCsv(modelsFile, categoryTaxonomy)
-  }
+  def getModelIds(): Seq[String]
 
-  def getModelIds(source: String = null, category: String = null): Seq[String] = {
-    val ids = if (source != null) {
-      models.keys.toIndexedSeq.filter( x => {
-        val fullId = FullId(x)
+  def getModelInfo(id: String): Option[ModelInfo]
+
+  def getModelInfos(): Seq[ModelInfo]
+
+  def getModelInfos(source: String, category: String): Seq[ModelInfo] = {
+    val modelInfos = if (source != null) {
+      getModelInfos.filter( x => {
+        val fullId = FullId(x.fullId)
         fullId.source == source
       })
     } else {
-      models.keys.toIndexedSeq
+      getModelInfos
     }
-    val filteredIds = if (category != null) {
-      ids.filter( id => {
-        CategoryUtils.hasCategory(models(id), category)
+    val filtered = if (category != null) {
+      modelInfos.filter( modelInfo => {
+        CategoryUtils.hasCategory(modelInfo, category)
       })
     } else {
-      ids
+      modelInfos
     }
-    filteredIds
+    filtered
+  }
+
+  def getModelIds(source: String, category: String): Seq[String] = {
+    getModelInfos(source, category).map( x => x.fullId )
   }
 
   def getRandomModelIds(source: String = null, category: String = null, nModels:Int = 1): Seq[String] = {
@@ -65,6 +60,108 @@ class ModelsDb(modelsFile: String = Constants.MODELS3D_CSV_FILE) extends Loggabl
     } else {
       null
     }
+  }
+
+}
+
+class CombinedModelsDb() extends ModelsDb with Loggable {
+  lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
+  lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
+
+  def registerModelsDb(modelsDb: ModelsDb) = {
+    val sources = modelsDb.getSources()
+    modelsDbs.append(modelsDb)
+    for (source <- sources) {
+      val list = modelsDbsBySource.getOrElseUpdate(source, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
+      list.append(modelsDb)
+    }
+  }
+  def registerCsvAsModelsDb(modelsCsvFile: String): ModelsDb = {
+    val db = new ModelsDbWithCsv(modelsCsvFile)
+    db.init()
+    registerModelsDb(db)
+    db
+  }
+  def registerSolrQueryAsModelsDb(solrQuerier: SolrQuerier, solrQuery: String): ModelsDb = {
+    val db = new ModelsDbWithSolrQuery(solrQuerier, solrQuery)
+    db.init()
+    registerModelsDb(db)
+    db
+  }
+  def getModelsDb(source: String): Seq[ModelsDb] = modelsDbsBySource.get(source).map( x => x.toSeq ).getOrElse(Seq())
+  def getModelsDbForModel(modelId: String): Seq[ModelsDb] = {
+    val fullId = FullId(modelId)
+    getModelsDb(fullId.source)
+  }
+
+  def getModelInfo(modelId: String): Option[ModelInfo] = {
+    val fullId = FullId(modelId)
+    val dbs = getModelsDb(fullId.source)
+    for (db <- dbs) {
+      val modelInfo = db.getModelInfo(modelId)
+      if (modelInfo.isDefined) return modelInfo
+    }
+    None
+  }
+
+  def getSources(): Set[String] = modelsDbsBySource.keySet.toSet
+
+  def getModelIds(): Seq[String] = modelsDbs.flatMap( x => x.getModelIds() )
+
+  def getModelInfos(): Seq[ModelInfo] = modelsDbs.flatMap( x => x.getModelInfos() )
+
+  override def getModelInfos(source: String, category: String): Seq[ModelInfo] = {
+    if (source != null) {
+      if (modelsDbsBySource.contains(source)) {
+        modelsDbsBySource(source).flatMap( x => x.getModelInfos(source = source, category = category) )
+      } else Seq()
+    } else {
+      modelsDbs.flatMap( x => x.getModelInfos(source = source, category = category) )
+    }
+  }
+
+}
+
+abstract class ModelsDbWithMap() extends ModelsDb with Loggable {
+  var models: Map[String, ModelInfo] = null
+  var sources: Set[String] = null
+  var categoryTaxonomy: CategoryTaxonomy = null
+
+  def getSources(): Set[String] = sources
+
+  def getModelInfos(): Seq[ModelInfo] = {
+    models.values.toIndexedSeq
+  }
+
+  def getModelInfo(id: String): Option[ModelInfo] = {
+    models.get(id)
+  }
+
+  def getModelIds(): Seq[String] = {
+    models.keys.toIndexedSeq
+  }
+}
+
+class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String) extends ModelsDbWithMap with Loggable {
+  def init(catTaxonomy: CategoryTaxonomy = null)
+  {
+    categoryTaxonomy = catTaxonomy
+    models = queryModels(query)
+    sources = models.values.map( x => x.source ).toSet
+  }
+
+  def queryModels(query: String, categoryTaxonomy: CategoryTaxonomy = null): Map[String, ModelInfo] = {
+    val modelInfos = solrQuerier.getModelInfos(query)
+    modelInfos.map( x => x.fullId -> x ).toMap
+  }
+}
+
+class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable {
+  def init(catTaxonomy: CategoryTaxonomy = null)
+  {
+    categoryTaxonomy = catTaxonomy
+    models = readModelsCsv(modelsFile, categoryTaxonomy)
+    sources = models.values.map( x => x.source ).toSet
   }
 
   def readModelsCsv(filename: String, categoryTaxonomy: CategoryTaxonomy = null): Map[String, ModelInfo] = {
@@ -101,9 +198,11 @@ class ModelsDb(modelsFile: String = Constants.MODELS3D_CSV_FILE) extends Loggabl
         } else {
           csvCategories
         }
-        val isRoom = if (allCategories != null && !allCategories.isEmpty)
+        val isRoom = if (allCategories != null && !allCategories.isEmpty) {
           allCategories.contains("Room")
-        else false
+        } else {
+          false
+        }
         // Fix hacking unit for rooms... store in DB
         val defaultUnit = if (isRoom && modelId.startsWith("wss."))
           Constants.WSS_SCENE_SCALE

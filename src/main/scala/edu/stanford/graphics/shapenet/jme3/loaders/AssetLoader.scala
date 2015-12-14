@@ -24,8 +24,7 @@ class AssetLoader(val assetCreator: AssetCreator,
                   val defaultLoadFormat: Option[LoadFormat.Value]) extends Loggable {
   val utf8Loader = new UTF8Loader(this)
   val modelCache = new SoftLRUCache[String,assetCreator.MODEL](modelCacheSize.getOrElse(16))
-  implicit lazy val modelsDb = dataManager.modelsDb
-
+  private implicit val dm: DataManager = dataManager
 
   /** Use different loading options for different types of models */
 
@@ -126,7 +125,7 @@ class AssetLoader(val assetCreator: AssetCreator,
         case "utf8" => utf8Loader.loadModel(fullId.fullid, options.modelIdToPath(fullId.id), options ).asInstanceOf[assetCreator.MODEL]
         case _ => assetCreator.loadModel(fullId.fullid, options.modelIdToPath(fullId.id), options )
       }
-      if (dataManager.modelsDb != null && v != null) {
+      if (dataManager != null && v != null) {
         v.modelInfo = dataManager.getModelInfo(fullId.fullid).getOrElse(null)
       }
       v

@@ -29,7 +29,7 @@ trait Constants {
   val CACHE_DIR = ensureDir(prop("CACHE_DIR", WORK_DIR + "cache" + File.separator))
   val WEB_CACHE_DIR = CACHE_DIR + "web" + File.separator
 
-  val SHAPENET_VIEWER_DIR = ensureDir(prop("SHAPENET_VIEWER_DIR", CODE_DIR + "fuzzybox/shapenet-viewer"))
+  val SHAPENET_VIEWER_DIR = ensureDir(prop("SHAPENET_VIEWER_DIR", CODE_DIR + "shapenet-viewer"))
   val SHAPENET_HOST = prop("SHAPENET_HOST", "http://shapenet.cs.stanford.edu")
   val ASSETS_DIR = ensureDir(prop("ASSETS_DIR", SHAPENET_VIEWER_DIR + "/assets"))
   val MISC_DATA_HOST = prop("DATA_HOST", "http://dovahkiin.stanford.edu")

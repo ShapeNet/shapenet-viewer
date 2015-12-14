@@ -18,7 +18,7 @@ import scala.concurrent.duration._
 class DebugVisualizer(viewer: Viewer) extends Loggable {
   implicit lazy val jme: Jme = viewer.jme
   implicit lazy val dataManager = viewer.dataManager
-  implicit lazy val modelsDb = dataManager.modelsDb
+  //implicit lazy val modelsDb = dataManager.modelsDb
 
   lazy val colorbar = ColorBar.coolwarmBar
   var debugNode = new Node("Debug Node")

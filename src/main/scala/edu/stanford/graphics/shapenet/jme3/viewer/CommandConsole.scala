@@ -126,10 +126,9 @@ class CommandConsole(val controller: ViewerController,
           val modelIds = viewer.dataManager.solrQuerier.queryModelIds(query, limit.toInt, Seq(), false)
           processModels(args(2), modelIds.map( x => x._1))
         }
-        case Array(_, "model", "screenshots" | "stats", "shapenetCore", limit) => {
-          val modelIds = viewer.dataManager.solrQuerier.queryModelIds("datasets:shapenetCore", limit.toInt, Seq(), false)
-          println(modelIds.mkString(","))
-          processModels(args(2), modelIds.map( x => x._1))
+        case Array(_, "model", "screenshots" | "stats", "ShapeNetCore", category) => {
+          val modelIds = viewer.dataManager.shapeNetCoreModelsDb.getModelIds(null, category)
+          processModels(args(2), modelIds)
         }
         case Array(_, "model", "screenshots" | "stats", "all") => {
           val modelIds = Constants.MODELIDS
@@ -143,7 +142,7 @@ class CommandConsole(val controller: ViewerController,
           processModels(args(2), modelIds.toSeq)
         }
         case Array(_, "model", "screenshots" | "stats", "all", source, category) => {
-          val modelIds = viewer.dataManager.modelsDb.getModelIds(source, category)
+          val modelIds = viewer.dataManager.getModelIds(source, category)
           processModels(args(2), modelIds.toSeq)
         }
         case Array(_, "model", "screenshots" | "stats", "test", modelId) => {
@@ -193,7 +192,7 @@ class CommandConsole(val controller: ViewerController,
         case Array(_, "hierarchy") => {
           val scene = viewer.scene
           if (scene != null && scene.scene != null) {
-            val str = scene.scene.sceneHierarchyString(viewer.dataManager.modelsDb)
+            val str = scene.scene.sceneHierarchyString(viewer.dataManager)
             console.output(str)
           } else {
             console.output("No scene is loaded")

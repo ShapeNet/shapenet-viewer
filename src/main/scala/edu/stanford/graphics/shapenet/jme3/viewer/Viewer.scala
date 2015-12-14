@@ -707,7 +707,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   }
 
   def loadModelRandom(source: String = null, category: String = null) = {
-    val loadId = dataManager.modelsDb.getRandomModelId(source, category)
+    val loadId = dataManager.getRandomModelId(source, category)
     if (loadId != null) {
       logger.info("Loading random model " + loadId)
       loadModel(loadId)
