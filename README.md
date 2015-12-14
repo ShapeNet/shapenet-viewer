@@ -2,6 +2,8 @@
 
 This Java+Scala code was used to render the [ShapeNet](www.shapenet.org) model screenshots and thumbnails.  It can handle loading of OBJ+MTL, COLLADA DAE, KMZ, and PLY format 3D meshes.
 
+This is a realtime OpenGL-based renderer.  If you would like to use a raytracing framework for rendering, then a fork of the [Mitsuba renderer](https://github.com/shi-jian/mitsuba-shapenet) has been created by [Jian Shi](https://github.com/shi-jian) to handle ShapeNet models.
+
 Requirements
 ========
 [Java JDK 1.8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html). Make sure the JDK paths are added to the system path.
