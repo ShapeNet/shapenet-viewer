@@ -948,7 +948,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     }
     showSettings = false
     setSettings(settings)
-    settings.setTitle("BabySherlock Text2Scene")
+    settings.setTitle("ShapeNet Viewer")
     if (config.offscreenMode) {
       super.start(JmeContext.Type.OffscreenSurface)
     } else {
