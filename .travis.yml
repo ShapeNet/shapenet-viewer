@@ -1,0 +1,18 @@
+language: scala
+jdk: oraclejdk8
+sudo: false
+scala: 2.11.7
+env: BUILD="base" DATA_DIR=$HOME/test/data WORK_DIR=$HOME/work SHAPENET_VIEWER_DIR=$TRAVIS_BUILD_DIR
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.ivy2
+  - $HOME/.sbt
+  - $HOME/work/cache
+before_install: umask 0022
+script: 
+  - make
+  - sbt test
+    # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
