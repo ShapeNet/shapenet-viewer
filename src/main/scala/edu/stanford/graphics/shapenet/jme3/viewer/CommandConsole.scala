@@ -330,6 +330,24 @@ class CommandConsole(val controller: ViewerController,
     }
   }
 
+  private class RegisterCommand extends BasicConsoleCommand {
+    override def name = "register"
+    override def description = "Register"
+    override def registerArgs = Seq("shapeNetCore")
+    override def extendedDescription =
+      "register shapeNetCore <dir>"
+    override def executeImpl(args: Array[String]) {
+      args match {
+        case Array(_, "shapeNetCore", dir) => {
+          viewer.dataManager.registerShapeNetCore(dir)
+        }
+        case _ => {
+          console.output("Invalid parameters for " + name)
+        }
+      }
+    }
+  }
+
   private class HelpCommand extends BasicConsoleCommand {
     override def name = "help"
     override def description = "Help"
@@ -374,6 +392,7 @@ class CommandConsole(val controller: ViewerController,
     new SetCommand(),
     new OptimizeCommand(),
     new SaveCommand(),
+    new RegisterCommand(),
     new PrintCommand(),
     new ShowCommand(),
     new ExitCommand(),

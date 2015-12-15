@@ -170,24 +170,37 @@ public class MTLLoader implements AssetLoader {
         matName = name;
     }
     
-    protected Texture loadTexture(String path){
-        String[] split = path.trim().split("\\p{javaWhitespace}+");
-        
-        // will crash if path is an empty string
-        path = split[split.length-1];
-        
-        String name = new File(path).getName();
+    protected Texture tryLoadTexture(String name, boolean useDefaultTexture){
         TextureKey texKey = new TextureKey(folderName + name);
         texKey.setGenerateMips(true);
-        Texture texture;
+        Texture texture = null;
         try {
             texture = assetManager.loadTexture(texKey);
             texture.setWrap(WrapMode.Repeat);
+            logger.log(Level.INFO, "Loaded {0} for material {1}", new Object[]{texKey, key});
         } catch (AssetNotFoundException ex){
             logger.log(Level.WARNING, "Cannot locate {0} for material {1}", new Object[]{texKey, key});
+        }
+        if (texture == null && useDefaultTexture) {
             texture = new Texture2D(PlaceholderAssets.getPlaceholderImage());
             texture.setWrap(WrapMode.Repeat);
             texture.setKey(texKey);
+        }
+        return texture;
+    }
+
+    protected Texture loadTexture(String path) {
+        Texture texture = null;
+        if (path.length() > 0) {
+            String[] split = path.trim().split("\\p{javaWhitespace}+");
+            path = split[split.length - 1];
+            texture = tryLoadTexture(path, false);
+            if (texture == null) {
+                String name = new File(path).getName();
+                if (!name.equals(path)) {
+                    texture = tryLoadTexture(name, true);
+                }
+            }
         }
         return texture;
     }
@@ -323,9 +336,6 @@ public class MTLLoader implements AssetLoader {
         }
         
         MaterialList list = matList;
-
-        
-
         return list;
     }
 }

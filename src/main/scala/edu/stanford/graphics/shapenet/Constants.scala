@@ -60,10 +60,12 @@ trait Constants {
   val WSS_SCENE_SCALE = 0.0254
   val WSS_SCENE_UP = Vector3f.UNIT_Z
   val WSS_SCENE_FRONT = Vector3f.UNIT_Y.negate()
+  val WSS_MODEL_UP = Vector3f.UNIT_Z
+  val WSS_MODEL_FRONT = Vector3f.UNIT_Y.negate()
   val DEFAULT_SCENE_UP = Vector3f.UNIT_Z
   val DEFAULT_SCENE_FRONT = Vector3f.UNIT_Y.negate()
-  val DEFAULT_MODEL_UP = Vector3f.UNIT_Z
-  val DEFAULT_MODEL_FRONT = Vector3f.UNIT_Y.negate()
+  val DEFAULT_MODEL_UP = Vector3f.UNIT_Y
+  val DEFAULT_MODEL_FRONT = Vector3f.UNIT_Z.negate()
   // Our semantic coordinate frame
   val SEMANTIC_LEFT = Vector3f.UNIT_X.negate()
   val SEMANTIC_UP = Vector3f.UNIT_Y

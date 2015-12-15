@@ -10,6 +10,7 @@ import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
  * @author Angel Chang
  */
 class ViewerConfig(config: Config) extends ConfigManager(config) {
+  val shapeNetCoreDir = getString("viewer.shapeNetCoreDir")
   val width = Option(getIntOption("viewer.width").getOrElse(1024))
   val height = Option(getIntOption("viewer.height").getOrElse(768))
   val showSettings = getBoolean("viewer.showSettings", false)

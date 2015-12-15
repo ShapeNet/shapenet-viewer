@@ -9,7 +9,6 @@ import edu.stanford.graphics.shapenet.util.StringUtils
 object CategoryUtils {
   val ROOT = "ROOT"
   val UNKNOWN = "UNKNOWN"
-  lazy val categoryTaxonomy = new CategoryTaxonomy()
 
   def normalize(s: String) = {
     StringUtils.toCamelCase(s)
@@ -32,14 +31,6 @@ object CategoryUtils {
   def isSameCategory(cat1: String, cat2: String): Boolean = {
     // TODO: normalize?
     cat1 == cat2
-  }
-
-  def isSubCategory(subCat: String, cat: String): Boolean = {
-    categoryTaxonomy.getSubCategoryLevel(subCat, cat) >= 0
-  }
-
-  def isSimilarCategory(subCat: String, cat: String): Boolean = {
-    isSubCategory(subCat, cat) || isSubCategory(cat, subCat)
   }
 
   def getCategories(m: Option[ModelInfo]): Seq[String] = {

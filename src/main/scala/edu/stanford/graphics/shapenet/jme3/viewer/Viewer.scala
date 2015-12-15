@@ -971,6 +971,9 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     Jme.initAssetManager(assetManager, useViewerAssets = true, useDataDir = Constants.USE_LOCAL_DATA, useCustomObjLoader = useCustomObjLoader)
     jme = Jme(assetManager, config.modelCacheSize, config.loadFormat)
     Jme.setDefault(jme)
+    if (config.shapeNetCoreDir != null) {
+      jme.dataManager.registerShapeNetCore(config.shapeNetCoreDir)
+    }
     this.falseBkMaterial = jme.getSimpleFalseColorMaterial(0.5, 0.5, 0.5)
 
     modelInfoAppState = new ModelInfoAppState()

@@ -296,14 +296,12 @@ case class SceneObject(var index: Int,
     else null
   }
   def up(implicit dataManager: DataManager): Vector3f = {
-    val model = modelInfo
-    val up = if (model != null) model.up else null
-    if (up != null) up else Constants.DEFAULT_MODEL_UP
-  }
+    val up = if (modelInfo != null) modelInfo.up else Constants.DEFAULT_MODEL_UP
+    up
+}
   def front(implicit dataManager: DataManager): Vector3f = {
-    val model = modelInfo
-    val front = if (model != null) model.front else null
-    if (front != null) front else Constants.DEFAULT_MODEL_FRONT
+    val front = if (modelInfo != null) modelInfo.front else Constants.DEFAULT_MODEL_FRONT
+    front
   }
   def fullId() = {
     FullId(modelID).fullid

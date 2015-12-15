@@ -1,31 +1,82 @@
 package edu.stanford.graphics.shapenet.common
 
-import java.io.File
-
-import au.com.bytecode.opencsv.CSVWriter
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.data.ModelsDb
-import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, IOUtils}
+import edu.stanford.graphics.shapenet.util.{CSVFile, IOUtils}
+import org.json.simple.JSONValue
+import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
  * Simple category taxonomy with mapping to WordNet.
- * @param categoriesFile with category hierarchy
  * @author Angel Chang
  */
-class CategoryTaxonomy(val categoriesFile: String = Constants.CATEGORIES_FILE,
-                       val materialsFile: String = Constants.CATEGORY_MATERIALS_FILE,
-                       val isContainerFile: String = Constants.CATEGORY_ISCONTAINER_FILE) {
-  val categoryMap: Map[String, CategoryInfo] = initCategories()
-  var synsetCategoriesMap: Map[String, Set[String]] = null
+class CategoryTaxonomy() {
+  var categoryMap: Map[String, CategoryInfo] = null
+  var nameToCategoriesMap: Map[String, Set[CategoryInfo]] = null
+  var synsetToCategoriesMap: Map[String, Set[CategoryInfo]] = null
 
-  def initCategories(): Map[String, CategoryInfo] = {
+  def init(filename: String, format: String): Unit = {
+    if (format == "json") {
+      categoryMap = initFromJson(filename)
+    } else if (format == "csv") {
+      categoryMap = initFromCsv(filename)
+    } else {
+      throw new IllegalArgumentException("Unsupported format")
+    }
+    synsetToCategoriesMap = categoryMap.values.filter(x => x.synsetId != null).groupBy(x => x.synsetId ).mapValues( y => y.toSet )
+    nameToCategoriesMap = categoryMap.values.map( x => x.names.map( n => (n,x))).flatten.groupBy( x => x._1 ).mapValues( y => y.map( z => z._2 ).toSet )
+  }
+
+  def initFromJson(jsonFile: String): Map[String, CategoryInfo] = {
+    val json = JSONValue.parse(IOUtils.fileReader(jsonFile))
+    json match {
+      case a:java.util.List[_] => {
+        val categories = convertCategories(a)
+        val map = categories.map( c => c.name -> c ).toMap
+        for (cat <- categoryMap.values) {
+          for (child <- cat.children) {
+            val ccat = map(child)
+            ccat.parent = cat.name
+          }
+        }
+        map
+      }
+      case _ => throw new IllegalArgumentException("Invalid taxonomy " + jsonFile)
+    }
+  }
+
+  private def convertCategories(a: java.util.List[_]): IndexedSeq[CategoryInfo] = {
+    val cats = a.map( c => {
+      val m = c.asInstanceOf[java.util.Map[String,_]]
+      val synsetId = m("synsetId").asInstanceOf[java.lang.String]
+      val names = m("name").asInstanceOf[java.lang.String].split(",")
+      val children = m("children").asInstanceOf[java.util.List[_]].map ( x => x.asInstanceOf[java.lang.String] )
+      val cat = new CategoryInfo(synsetId)
+      cat.children ++= children
+      cat.names ++= names
+      cat.synsetId = synsetId
+      cat
+    })
+    cats.toIndexedSeq
+  }
+
+  def initFromCsv(categoriesFile: String = Constants.CATEGORIES_FILE,
+                  materialsFile: String = Constants.CATEGORY_MATERIALS_FILE,
+                  isContainerFile: String = Constants.CATEGORY_ISCONTAINER_FILE): Map[String, CategoryInfo] = {
     val map = new mutable.HashMap[String, CategoryInfo]()
     readCategories(map, categoriesFile)
     readMaterialsFile(map, materialsFile)
     readIsContainerFile(map, isContainerFile)
     map.toMap
+  }
+
+  def isSubCategory(subCat: String, cat: String): Boolean = {
+    getSubCategoryLevel(subCat, cat) >= 0
+  }
+
+  def isSimilarCategory(subCat: String, cat: String): Boolean = {
+    isSubCategory(subCat, cat) || isSubCategory(cat, subCat)
   }
 
   def getContainerCategories(): Set[String] = {
@@ -99,42 +150,6 @@ class CategoryTaxonomy(val categoriesFile: String = Constants.CATEGORIES_FILE,
     }
   }
 
-  def updateCategoriesFile(categoriesFile: String,
-                           backupFile: String = categoriesFile.replace(".csv", ".backup.csv"))(modelsDb: ModelsDb = null): Unit = {
-    // Update categories file with synsets
-    val tempFile = File.createTempFile("categories", "txt")
-    val csvWriter: CSVWriter = new CSVWriter(IOUtils.filePrintWriter(tempFile.getAbsolutePath))
-    val csvfile = new CSVFile(categoriesFile, includesHeader = true)
-    val iCategory: Int = csvfile.index("category")
-    val iModelId: Int = csvfile.index("exampleModel")
-    val iSynsetId: Int = csvfile.index("wnsynsetid")
-    val header = csvfile.getHeader()
-    val sampler = new BatchSampler()
-    csvWriter.writeNext(header)
-    for (row <- csvfile) {
-      val category: String = row(iCategory).trim
-      val modelId: String = row(iModelId).trim
-      val existing = categoryMap.getOrElse(category, null)
-
-      // Output row
-      row.update(iSynsetId, existing.synsetId)
-      if (modelsDb != null) {
-        if (modelId.isEmpty || "none".equals(modelId)) {
-          // Try to sample from our models
-          val candidates = modelsDb.getModelInfos("wss", category)
-          val sampled = sampler.sampleOne(candidates.toIndexedSeq)
-          if (sampled.isDefined) {
-            row.update(iModelId, sampled.get.fullId)
-          }
-        }
-      }
-      csvWriter.writeNext(row)
-    }
-    csvWriter.close()
-    IOUtils.moveFile(categoriesFile, backupFile)
-    IOUtils.moveFile(tempFile.getAbsolutePath(), categoriesFile)
-  }
-
   private def readMaterialsFile(map: mutable.HashMap[String, CategoryInfo], filename: String): Unit = {
     val csvfile = new CSVFile(filename, includesHeader = true)
     val iCategory: Int = csvfile.index("Category")
@@ -170,8 +185,8 @@ class CategoryTaxonomy(val categoriesFile: String = Constants.CATEGORIES_FILE,
     categoryMap.getOrElse(category, null)
   }
 
-  def getCategories(synset: String): Set[String] = {
-    synsetCategoriesMap.getOrElse(synset, null)
+  def getCategories(synset: String): Set[CategoryInfo] = {
+    synsetToCategoriesMap.getOrElse(synset, Set())
   }
 
   def getSynsetId(category: String): String = {
@@ -225,6 +240,7 @@ class CategoryTaxonomy(val categoriesFile: String = Constants.CATEGORIES_FILE,
  */
 class CategoryInfo(val name: String, var parent: String = null) extends HasAttributes {
   val children: mutable.Set[String] = mutable.Set[String]()
+  var names: mutable.Set[String] = mutable.Set[String]()
   var synsetId: String = null
   var materials: Map[String, Double] = null // Priors on what an object of this category is made of
   var isContainer: Boolean = false // is this category typically a container?

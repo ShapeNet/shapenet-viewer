@@ -1,7 +1,8 @@
 package edu.stanford.graphics.shapenet.data
 
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.{FullId, ModelInfo}
+import edu.stanford.graphics.shapenet.common.{CategoryTaxonomy, ModelInfo}
+import edu.stanford.graphics.shapenet.util.IOUtils
 
 /**
  * Handles data management
@@ -22,6 +23,13 @@ class DataManager extends CombinedModelsDb {
     else getModelInfoFromSolr(modelId)
   }
 
+  def registerShapeNetCore(dirpath: String): Unit = {
+    val categoryTaxonomy = new CategoryTaxonomy()
+    val dir = IOUtils.ensureDirname(dirpath)
+    categoryTaxonomy.init(dir + "taxonomy.json", "json")
+    val modelsDb = new ModelsDbWithCategoryCsvs(dir)
+    registerModelsDb(modelsDb)
+  }
 }
 
 object DataManager {

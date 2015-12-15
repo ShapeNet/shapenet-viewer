@@ -6,6 +6,7 @@ import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOU
 import edu.stanford.graphics.shapenet.Constants
 
 import scala.util.Random
+import scala.util.matching.Regex
 
 /**
  *  Database of 3D models
@@ -65,6 +66,7 @@ trait ModelsDb {
 }
 
 class CombinedModelsDb() extends ModelsDb with Loggable {
+  lazy val modelsDbsByName = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
 
@@ -244,4 +246,22 @@ class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable 
   }
 
 }
+
+class ModelsDbWithCategoryCsvs(dir: String) extends CombinedModelsDb with Loggable {
+  lazy val modelsDbsByCategory = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
+
+  def init(catTaxonomy: CategoryTaxonomy = null) {
+    // Get csvs from dir
+    val csvFiles = IOUtils.listFiles(dir, new Regex("*.csv$"))
+    for (categoryCsv <- csvFiles) {
+      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath)
+      modelsDb.init(catTaxonomy)
+      registerModelsDb(modelsDb)
+      val category = IOUtils.stripExtension(categoryCsv.getName)
+      val list = modelsDbsByCategory.getOrElseUpdate(category, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
+      list.append(modelsDb)
+    }
+  }
+}
+
 
