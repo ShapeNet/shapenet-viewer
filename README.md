@@ -22,3 +22,27 @@ Main class: `edu.stanford.graphics.shapenet.jme3.viewer.Viewer`
 Set `WORK_DIR` (where output screenshots are saved) and `SHAPENET_VIEWER_DIR` (to shapenet-viewer checkout) as needed.
 
 Run `scripts/viewer.sh` to start the viewer.  Look in `config/viewer.conf` for general settings and `config/screenshots.conf` for screenshot generation settings used for ShapeNet thumbnails.
+
+Once the viewer has started, press 'F1' to bring up the help screen, and 'F4' to bring up the console.  
+
+By default, KMZ model are loaded from the web and cached in `WORK_DIR/cache`.  
+
+If you already have a local copy of ShapeNetCore, you specify the location of ShapeNetCore by:
+
+      register shapeNetCore <path>
+      
+After registering the path to your local ShapeNet, you can display models by running one of the following commands:
+
+      load model <modelId>
+      load model random
+      load model random 3dw chair
+      
+You can also load models directly from the file system or the web using
+
+      load model <filepath>
+      load model <url>
+      
+You can save screenshots for the currently loaded model using:
+
+      save model screenshots
+     
