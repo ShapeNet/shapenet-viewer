@@ -27,7 +27,7 @@ Once the viewer has started, press 'F1' to bring up the help screen, and 'F4' to
 
 By default, KMZ model are loaded from the web and cached in `WORK_DIR/cache`.  
 
-If you already have a local copy of ShapeNet installed, you can use the specified the location by:
+If you already have a local copy of ShapeNetCore, you specify the location of ShapeNetCore by:
 
       register shapeNetCore <path>
       
