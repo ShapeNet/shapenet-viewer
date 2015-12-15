@@ -131,14 +131,11 @@ class CommandConsole(val controller: ViewerController,
           processModels(args(2), modelIds)
         }
         case Array(_, "model", "screenshots" | "stats", "all") => {
-          val modelIds = Constants.MODELIDS
+          val modelIds = viewer.dataManager.getModelIds()
           processModels(args(2), modelIds.toSeq)
         }
         case Array(_, "model", "screenshots" | "stats", "all", source) => {
-          val modelIds = Constants.MODELIDS.filter( x => {
-            val fullId = FullId(x)
-            fullId.source == source
-          })
+          val modelIds = viewer.dataManager.getModelIds(source, null)
           processModels(args(2), modelIds.toSeq)
         }
         case Array(_, "model", "screenshots" | "stats", "all", source, category) => {

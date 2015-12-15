@@ -1,7 +1,7 @@
 package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
-import edu.stanford.graphics.shapenet.common.{CategoryTaxonomy, CategoryUtils, FullId, ModelInfo}
+import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 import edu.stanford.graphics.shapenet.Constants
 
@@ -65,7 +65,7 @@ trait ModelsDb {
 
 }
 
-class CombinedModelsDb() extends ModelsDb with Loggable {
+class CombinedModelsDb(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   lazy val modelsDbsByName = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
@@ -78,14 +78,16 @@ class CombinedModelsDb() extends ModelsDb with Loggable {
       list.append(modelsDb)
     }
   }
-  def registerCsvAsModelsDb(modelsCsvFile: String): ModelsDb = {
-    val db = new ModelsDbWithCsv(modelsCsvFile)
+  def registerCsvAsModelsDb(modelsCsvFile: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
+    logger.info("Registering " + modelsCsvFile)
+    val db = new ModelsDbWithCsv(modelsCsvFile, defaults)
     db.init()
     registerModelsDb(db)
     db
   }
-  def registerSolrQueryAsModelsDb(solrQuerier: SolrQuerier, solrQuery: String): ModelsDb = {
-    val db = new ModelsDbWithSolrQuery(solrQuerier, solrQuery)
+  def registerSolrQueryAsModelsDb(solrQuerier: SolrQuerier, solrQuery: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
+    logger.info("Registering query " + solrQuery)
+    val db = new ModelsDbWithSolrQuery(solrQuerier, solrQuery, defaults)
     db.init()
     registerModelsDb(db)
     db
@@ -124,7 +126,7 @@ class CombinedModelsDb() extends ModelsDb with Loggable {
 
 }
 
-abstract class ModelsDbWithMap() extends ModelsDb with Loggable {
+abstract class ModelsDbWithMap(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   var models: Map[String, ModelInfo] = null
   var sources: Set[String] = null
   var categoryTaxonomy: CategoryTaxonomy = null
@@ -144,7 +146,8 @@ abstract class ModelsDbWithMap() extends ModelsDb with Loggable {
   }
 }
 
-class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String) extends ModelsDbWithMap with Loggable {
+class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String,
+                            defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(defaultModelInfo) with Loggable {
   def init(catTaxonomy: CategoryTaxonomy = null)
   {
     categoryTaxonomy = catTaxonomy
@@ -153,12 +156,12 @@ class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String) extends Mod
   }
 
   def queryModels(query: String, categoryTaxonomy: CategoryTaxonomy = null): Map[String, ModelInfo] = {
-    val modelInfos = solrQuerier.getModelInfos(query)
+    val modelInfos = solrQuerier.getModelInfos(query, defaultModelInfo)
     modelInfos.map( x => x.fullId -> x ).toMap
   }
 }
 
-class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable {
+class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(defaultModelInfo) with Loggable {
   def init(catTaxonomy: CategoryTaxonomy = null)
   {
     categoryTaxonomy = catTaxonomy
@@ -178,12 +181,18 @@ class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable 
         str.toDouble
       } else default
     }
+    def toDoubleOption(str: String): Option[Double] = {
+      if (str != null && str.length > 0) {
+        Some(str.toDouble)
+      } else None
+    }
     // Read CSV of models
     val csvFile = new CSVFile(
       fileName = filename,
       includesHeader = true,
       escape = '\\')
       //headerFieldLength = collection.immutable.HashMap("minPoint" -> 3, "maxPoint" -> 3))
+    val defaultsForWssRoom = defaultModelInfo.copy(unit = Constants.WSS_SCENE_SCALE)
     val map = csvFile.toMap(
       row =>  {
         val modelId = csvFile.field(row, "fullId")
@@ -206,17 +215,17 @@ class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable 
           false
         }
         // Fix hacking unit for rooms... store in DB
-        val defaultUnit = if (isRoom && modelId.startsWith("wss."))
-          Constants.WSS_SCENE_SCALE
-        else Constants.DEFAULT_MODEL_UNIT
+        val defaults = if (isRoom && modelId.startsWith("wss."))
+          defaultsForWssRoom
+        else defaultModelInfo
 
-        val unit = toDouble(csvFile.field(row,"unit"), defaultUnit)
+        val unit = toDoubleOption(csvFile.field(row,"unit"))
 
         val info = new ModelInfo(
           fullId = modelId,
           minPoint = minPoint,
           maxPoint = maxPoint,
-          rawbbdims = maxPoint.subtract(minPoint),
+          rawbbdims = if (maxPoint != null && minPoint != null) maxPoint.subtract(minPoint) else null,
           name = csvFile.field(row, "name"),
           tags = csvFile.splitField(row, "tags", ",").filter( t => !t.isEmpty && !t.equals("*")),
           allCategory = allCategories,
@@ -224,8 +233,9 @@ class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable 
           scenes = csvFile.splitField(row, "scenes", ",").map( x => x.intern() ),
           datasets = csvFile.splitField(row, "datasets", ",").map( x => x.intern() ),
           unit0 = unit,
-          up0 = up,
-          front0 = front
+          up0 = Option(up),
+          front0 = Option(front),
+          defaults
         )
         (modelId, info)
       }
@@ -247,14 +257,14 @@ class ModelsDbWithCsv(modelsFile: String) extends ModelsDbWithMap with Loggable 
 
 }
 
-class ModelsDbWithCategoryCsvs(dir: String) extends CombinedModelsDb with Loggable {
+class ModelsDbWithCategoryCsvs(dir: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends CombinedModelsDb(defaultModelInfo) with Loggable {
   lazy val modelsDbsByCategory = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
 
   def init(catTaxonomy: CategoryTaxonomy = null) {
     // Get csvs from dir
     val csvFiles = IOUtils.listFiles(dir, new Regex("*.csv$"))
     for (categoryCsv <- csvFiles) {
-      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath)
+      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath, defaultModelInfo)
       modelsDb.init(catTaxonomy)
       registerModelsDb(modelsDb)
       val category = IOUtils.stripExtension(categoryCsv.getName)

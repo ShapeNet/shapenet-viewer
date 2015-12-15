@@ -65,7 +65,7 @@ trait Constants {
   val DEFAULT_SCENE_UP = Vector3f.UNIT_Z
   val DEFAULT_SCENE_FRONT = Vector3f.UNIT_Y.negate()
   val DEFAULT_MODEL_UP = Vector3f.UNIT_Y
-  val DEFAULT_MODEL_FRONT = Vector3f.UNIT_Z.negate()
+  val DEFAULT_MODEL_FRONT = Vector3f.UNIT_X
   // Our semantic coordinate frame
   val SEMANTIC_LEFT = Vector3f.UNIT_X.negate()
   val SEMANTIC_UP = Vector3f.UNIT_Y
@@ -83,13 +83,9 @@ trait Constants {
 
   /** File generated from solr */
   val MODELS_DATA_DIR = if (USE_LOCAL_DATA) DATA_DIR + "models/data-tables/" else TEXT2SCENE_DIR  + "models/data-tables/"
-  val MODELS3D_CSV_FILE = MODELS_DATA_DIR + "models3d.csv"
+  val WSS_MODELS3D_CSV_FILE = MODELS_DATA_DIR + "models3d.csv"
   // Computed stats files
   val COMPUTED_MODEL_STATS_FILE = MODELS_DATA_DIR + "computedModelStats.csv"
-  // quick dirty read of the models csv to get model ids (assumes first column is the id, and that the first row is header)
-  lazy val MODELIDS = IOUtils.getLines(MODELS3D_CSV_FILE).map(
-    line => line.split(",")(0)
-  ).drop(1).toIndexedSeq
 
   // Surfaces extractions
   val SURFACES_OBJ_DIR = TEXT2SCENE_DIR + "surfaces.obj/"
@@ -115,6 +111,9 @@ trait Constants {
   //  val SCENES_SOLR_URL = SOLR_HOST + "/solr/scenes"
   val MODELS3D_SOLR_URL = SHAPENET_HOST + "/models3d/solr"
   val SCENES_SOLR_URL = SHAPENET_HOST + "/scenes/solr"
+
+  val SHAPENET_CORE_MODELS3D_CSV_FILE = WORK_DIR + "shapeNetCore.models3d.csv"
+  val SHAPENET_CORE_MODELS3D_CSV_SOLR_URL = MODELS3D_SOLR_URL + "/select?sort=fullId+asc&q=hasModel%3Atrue&rows=100000&fl=fullId%2CminPoint%2CmaxPoint%2Ccategory%2Ccategory0%2Cname%2Ctags%2Cscenes%2Cdatasets%2Cunit%2Cup%2Cfront&fq=%2Bdatasets%3A(ShapeNetCore)&wt=csv"
 
   // Constants for scenes
   val SCENES_DIR = DATA_DIR + "scenes" + File.separator

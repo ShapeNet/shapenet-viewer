@@ -6,6 +6,10 @@ import edu.stanford.graphics.shapenet.util.StringUtils
 
 import scala.collection.mutable
 
+case class DefaultModelInfo(unit: Double = Constants.DEFAULT_MODEL_UNIT,
+                            up: Vector3f = Constants.DEFAULT_MODEL_UP,
+                            front: Vector3f = Constants.DEFAULT_MODEL_FRONT)
+
 /**
  * ModelInfo
  * @author Angel Chang
@@ -21,13 +25,14 @@ class ModelInfo(
                  val category0: Array[String] = null,
                  val scenes: Array[String] = null,
                  val datasets: Array[String] = null,
-                 val unit0: Double = Constants.DEFAULT_MODEL_UNIT,
-                 val up0: Vector3f = null,
-                 val front0: Vector3f = null
+                 val unit0: Option[Double] = None,
+                 val up0: Option[Vector3f] = None,
+                 val front0: Option[Vector3f] = None,
+                 val defaults: DefaultModelInfo = DefaultModelInfo()
                  ) {
-  var unit = unit0
-  var up = if (up0 != null) up0 else Constants.DEFAULT_MODEL_UP
-  var front = if (front0 != null) front0 else Constants.DEFAULT_MODEL_FRONT
+  var unit = unit0.getOrElse(defaults.unit)
+  var up = up0.getOrElse(defaults.up)
+  var front = front0.getOrElse(defaults.front)
 
   // Computed statistics
   var materials: Seq[(String,Double)] = null // What is this model made of

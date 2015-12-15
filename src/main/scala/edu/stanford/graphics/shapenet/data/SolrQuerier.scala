@@ -2,7 +2,7 @@ package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.{AttributeTypes, ModelInfo, FullId}
+import edu.stanford.graphics.shapenet.common.{DefaultModelInfo, AttributeTypes, ModelInfo, FullId}
 import edu.stanford.graphics.shapenet.util.{SolrUtils, StringUtils}
 import org.apache.solr.common.SolrDocument
 import org.apache.solr.client.solrj.{SolrQuery, SolrClient}
@@ -94,7 +94,7 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
     results.map( x => (x.get("fullId").asInstanceOf[String], x.get("score").asInstanceOf[Float].toDouble))
   }
 
-  private def solrResultsToModelInfo(results: Seq[SolrDocument]): Seq[ModelInfo] = {
+  private def solrResultsToModelInfo(results: Seq[SolrDocument], defaults: DefaultModelInfo): Seq[ModelInfo] = {
     def toVector3D(str: String): Vector3f = {
       if (str != null && str.length > 0) {
         val f = str.split("\\s*,\\s*").map( s => s.toFloat )
@@ -105,6 +105,11 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
       if (v != null) {
         v.asInstanceOf[Double]
       } else default
+    }
+    def toDoubleOption(v: AnyRef): Option[Double] = {
+      if (v != null) {
+        Some(v.asInstanceOf[Double])
+      } else None
     }
     def toStringArray(list: java.util.List[_], default: Array[String] = Array()): Array[String] = {
       if (list != null) {
@@ -120,9 +125,10 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
         allCategory = toStringArray(x.get("category").asInstanceOf[java.util.List[_]]),
         category0 = toStringArray(x.get("category0").asInstanceOf[java.util.List[_]]),
         datasets = toStringArray(x.get("datasets").asInstanceOf[java.util.List[_]]),
-        unit0 = toDouble(x.get("unit"), Constants.DEFAULT_MODEL_UNIT),
-        up0 = toVector3D(x.get("up").asInstanceOf[java.lang.String]),
-        front0 = toVector3D(x.get("front").asInstanceOf[java.lang.String])
+        unit0 = toDoubleOption(x.get("unit")),
+        up0 = Option(toVector3D(x.get("up").asInstanceOf[java.lang.String])),
+        front0 = Option(toVector3D(x.get("front").asInstanceOf[java.lang.String])),
+        defaults = defaults
       )
       m.wnsynset = toStringArray(x.get("wnsynset").asInstanceOf[java.util.List[_]])
       m.wnhypersynset = toStringArray(x.get("wnhypersynsets").asInstanceOf[java.util.List[_]])
@@ -134,25 +140,25 @@ class SolrQuerier(modelSources: Seq[String] = Seq(/*"archive3d",*/)) {
     })
   }
 
-  def getModelInfo(modelId: String): Option[ModelInfo] = {
+  def getModelInfo(modelId: String, defaults: DefaultModelInfo): Option[ModelInfo] = {
     val solrQuery = new SolrQuery( makeFieldQueryString("fullId", modelId) )
     solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset", "wnhypersynsets", "datasets")
     val response = modelsServer.query(solrQuery)
     val results = response.getResults()
-    solrResultsToModelInfo(results).headOption
+    solrResultsToModelInfo(results, defaults).headOption
   }
 
-  def getModelInfos(solrQueryStr: String): Seq[ModelInfo] = {
+  def getModelInfos(solrQueryStr: String, defaults: DefaultModelInfo): Seq[ModelInfo] = {
     val solrQuery = new SolrQuery( solrQueryStr )
     val modelFilterQueries = getModelFilterQueries()
     solrQuery.setFilterQueries(modelFilterQueries:_*)
-    getModelInfos(solrQuery)
+    getModelInfos(solrQuery, defaults)
   }
 
-  def getModelInfos(solrQuery: SolrQuery): Seq[ModelInfo] = {
+  def getModelInfos(solrQuery: SolrQuery, defaults: DefaultModelInfo): Seq[ModelInfo] = {
     solrQuery.setFields("fullId","name","tags", "category","category0", "unit","front","up", "pcaDim", "wnsynset", "datasets")
     val stream = SolrUtils.query(modelsServer, solrQuery)
-    solrResultsToModelInfo(stream)
+    solrResultsToModelInfo(stream, defaults)
   }
 
   def getModelCategoryCounts(): Map[String,Long] = {

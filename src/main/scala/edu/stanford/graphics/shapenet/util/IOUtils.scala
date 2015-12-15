@@ -1,6 +1,6 @@
 package edu.stanford.graphics.shapenet.util
 
-import java.nio.charset.{Charset, CharsetDecoder, CharacterCodingException}
+import java.nio.charset.{Charset, CharsetDecoder}
 import java.nio.file.{StandardCopyOption, Files}
 
 import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorOutputStream, BZip2CompressorInputStream}

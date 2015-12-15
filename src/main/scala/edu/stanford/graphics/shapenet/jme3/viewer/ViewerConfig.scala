@@ -34,7 +34,7 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
 
   // Mutable configuration
   var defaultSceneDistanceScale = getFloat("viewer.sceneDistanceScale", 1.0f)
-  var defaultModelDistanceScale = getFloat("viewer.modelDistanceScale", 1.5f)
+  var defaultModelDistanceScale = getFloat("viewer.modelDistanceScale", 2.0f)
   var falseMaterialBlendOld = getFloat("viewer.falseMaterialBlendOld", 0.0f)
 
   // Select mode
