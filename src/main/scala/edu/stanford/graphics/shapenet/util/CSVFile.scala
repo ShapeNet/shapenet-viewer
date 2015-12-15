@@ -172,7 +172,9 @@ trait FieldIndexer {
       case index: Int => field(row, index)
       case _ => throw new IllegalArgumentException("Invalid field index " + f)
     }
-    v.split(separator).filter( s => !s.isEmpty )
+    if (v != null) {
+      v.split(separator).filter(s => !s.isEmpty)
+    } else Array()
   }
 
   def field(row: Array[String], fieldIndex: Int): String =

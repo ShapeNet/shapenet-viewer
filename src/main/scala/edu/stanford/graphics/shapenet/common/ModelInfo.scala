@@ -8,7 +8,8 @@ import scala.collection.mutable
 
 case class DefaultModelInfo(unit: Double = Constants.DEFAULT_MODEL_UNIT,
                             up: Vector3f = Constants.DEFAULT_MODEL_UP,
-                            front: Vector3f = Constants.DEFAULT_MODEL_FRONT)
+                            front: Vector3f = Constants.DEFAULT_MODEL_FRONT,
+                            categories: Seq[String] = Seq())
 
 /**
  * ModelInfo

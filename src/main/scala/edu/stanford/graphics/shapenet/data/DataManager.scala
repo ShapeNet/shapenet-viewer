@@ -1,5 +1,7 @@
 package edu.stanford.graphics.shapenet.data
 
+import java.io.File
+
 import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.common.{DefaultModelInfo, CategoryTaxonomy, ModelInfo}
 import edu.stanford.graphics.shapenet.util.{WebCacheUtils, IOUtils}
@@ -11,7 +13,7 @@ import edu.stanford.graphics.shapenet.util.{WebCacheUtils, IOUtils}
 class DataManager extends CombinedModelsDb {
   lazy val solrQuerier = new SolrQuerier
   //val shapeNetCoreModelsDb = registerSolrQueryAsModelsDb(solrQuerier, "datasets:ShapeNetCore")
-  val shapeNetCoreModelsDb = {
+  lazy val shapeNetCoreModelsDb = {
     WebCacheUtils.checkedFetchAndSave(Constants.SHAPENET_CORE_MODELS3D_CSV_SOLR_URL, Constants.SHAPENET_CORE_MODELS3D_CSV_FILE, 10000)
     registerCsvAsModelsDb(Constants.SHAPENET_CORE_MODELS3D_CSV_FILE)
   }
@@ -33,6 +35,23 @@ class DataManager extends CombinedModelsDb {
     val dir = IOUtils.ensureDirname(dirpath)
     categoryTaxonomy.init(dir + "taxonomy.json", "json")
     val modelsDb = new ModelsDbWithCategoryCsvs(dir)
+    modelsDb.init(categoryTaxonomy)
+    modelsDb.lowercaseCategoryNames = true
+
+    // customized load path
+    modelsDb.getModelLoadOptions = (fullId: String, format: String) => {
+      val modelInfo = getModelInfo(fullId)
+      var opts: Option[LoadOpts] = None
+      if (modelInfo.isDefined && modelInfo.get.category.nonEmpty) {
+        val x = modelInfo.get
+        val filename = dir + x.category.head + File.separator + x.id + File.separator + "model.obj"
+        if (IOUtils.isReadableFileWithData(filename)) {
+          opts = Some(LoadOpts(Some(filename), Some(defaultModelInfo.unit), Some(defaultModelInfo.up), Some(defaultModelInfo.front)))
+        }
+      }
+      opts
+    }
+
     registerModelsDb(modelsDb)
   }
 }

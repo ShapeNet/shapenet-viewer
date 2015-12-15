@@ -837,19 +837,21 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
 
     }
     val cameraPositionOptions = new CameraPositionOptions(
-      //      cameraPositioningStrategy = CameraPositioningStrategy.POSITION_BY_DISTANCE,
-      cameraPositioningStrategy = CameraPositioningStrategy.POSITION_TO_FIT,
-      cameraAngleFromHorizontal = Option((math.Pi/6).toFloat),
-      startRotation = Option(0)//,
-      //      distanceFromObjectRatio = Option(defaultModelDistanceScale)
+      cameraPositioningStrategy = config.cameraPositionStrategy,
+      cameraAngleFromHorizontal = Option(config.cameraAngleFromHorizontal),
+      startRotation = Option(config.cameraStartOrientation),
+      distanceFromObjectRatio = Option(defaultModelDistanceScale)
     )
 
-    val sceneImagesGen = new SceneImagesGenerator(this, randomize = true, skipExisting = true, getOutputDirFn = getOuputDirFn)
-    // Create 6 canonical views + 8 views around at height xxx
-    val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this)
-    //val camPosGen2 = CameraPositionGenerator(this, cameraPositionOptions, nViews = 8)
-    val camPosGen2 = new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = 8)
-    val cameraPositionGenerator = new CombinedCameraPositionGenerator(camPosGen1, camPosGen2)
+    val sceneImagesGen = new SceneImagesGenerator(this, randomize = config.randomizeModels, skipExisting = config.skipExisting, getOutputDirFn = getOuputDirFn)
+    val cameraPositionGenerator = if (config.includeCanonicalViews) {
+      // Create 6 canonical views + 8 views around at height xxx
+      val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this)
+      val camPosGen2 = new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
+      new CombinedCameraPositionGenerator(camPosGen1, camPosGen2)
+    } else {
+      new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
+    }
     sceneImagesGen.configCameraPositions(cameraPositionGenerator)
     sceneImagesGen.process(modelIds, screenShotDir + "models" + File.separator)
   }
@@ -972,7 +974,18 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     jme = Jme(assetManager, config.modelCacheSize, config.loadFormat)
     Jme.setDefault(jme)
     if (config.shapeNetCoreDir != null) {
-      jme.dataManager.registerShapeNetCore(config.shapeNetCoreDir)
+      try {
+        jme.dataManager.registerShapeNetCore(config.shapeNetCoreDir)
+      } catch {
+        case ex: Exception => {
+          logger.error ("Error initializing ShapeNetCore: " + config.shapeNetCoreDir, ex)
+        }
+      }
+    }
+    if (jme.dataManager.getSources().isEmpty) {
+      // force loading of shapenet core models db from web
+      logger.info("Loading ShapeNetCore from web")
+      jme.dataManager.shapeNetCoreModelsDb
     }
     this.falseBkMaterial = jme.getSimpleFalseColorMaterial(0.5, 0.5, 0.5)
 

@@ -7,7 +7,7 @@ import edu.stanford.graphics.shapenet.{jme3, Constants, UserDataConstants}
 import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.data.DataManager
 import edu.stanford.graphics.shapenet.jme3.JmeUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{PartLoadProgressListener, LoadProgressListener, LoadProgress, LoadFormat}
+import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader._
 import edu.stanford.graphics.shapenet.util._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -101,6 +101,19 @@ class AssetLoader(val assetCreator: AssetCreator,
       modelIdToPath = (id: String) => id
     )
   )
+  private val kmzLoadOptions = Map(
+    "3dw" -> new AssetLoader.LoadOptions(
+      //  /9/4/e/2/8/9c89059106bd8f74b0004a598cd/94e289c89059106bd8f74b0004a598cd/OBJ/94e289c89059106bd8f74b0004a598cd.obj
+      //doubleSided = true,
+      ignoreZeroRGBs = true,
+      defaultColor = Array(0.0, 0.0, 0.0),
+      modelIdToPath = (id: String) => {
+        val (id1,id2) = id.splitAt(6)
+        val prefix = id1.mkString("/") + id2
+        Seq(Constants.SHAPENET_DATA_DIR, prefix, id, "Collada", id + ".kmz").mkString("/")
+      }
+    )
+  )
 
   private val loadOptions = defaultLoadFormat.getOrElse(LoadFormat.OBJ_FORMAT) match {
     case LoadFormat.OBJ_FORMAT => objLoadOptions
@@ -120,10 +133,12 @@ class AssetLoader(val assetCreator: AssetCreator,
   def loadModel(modelId: String): assetCreator.MODEL = {
     val fullId = FullId(modelId)
     val options = loadOptions(fullId.source)
+    val loadOpts = dataManager.getModelLoadOptions(fullId.fullid, options.loader)
+    val loadPath = loadOpts.flatMap( x => x.path )
     modelCache.getOrElse(fullId.fullid)({
       val v = options.loader match {
-        case "utf8" => utf8Loader.loadModel(fullId.fullid, options.modelIdToPath(fullId.id), options ).asInstanceOf[assetCreator.MODEL]
-        case _ => assetCreator.loadModel(fullId.fullid, options.modelIdToPath(fullId.id), options )
+        case "utf8" => utf8Loader.loadModel(fullId.fullid, loadPath.getOrElse(options.modelIdToPath(fullId.id)), options ).asInstanceOf[assetCreator.MODEL]
+        case _ => assetCreator.loadModel(fullId.fullid, loadPath.getOrElse(options.modelIdToPath(fullId.id)), options )
       }
       if (dataManager != null && v != null) {
         v.modelInfo = dataManager.getModelInfo(fullId.fullid).getOrElse(null)
@@ -141,14 +156,17 @@ class AssetLoader(val assetCreator: AssetCreator,
       progress = new LoadProgress(modelId, "loadScene3D", 1, true)
       loadScene3DListener = new PartLoadProgressListener[assetCreator.SCENE, assetCreator.SCENE](progress, listener, 0)
     }
-    val fullId = FullId(modelId).fullid
-    val mi = new SceneObject(0, fullId, transform = transform)
-    val modelInfo = dataManager.getModelInfo(fullId).getOrElse(null)
+    val fullId = FullId(modelId)
+    val options = loadOptions(fullId.source)
+    val loadOpts = dataManager.getModelLoadOptions(fullId.fullid, options.loader)
+    val fullIdStr = FullId(modelId).fullid
+    val mi = new SceneObject(0, fullIdStr, transform = transform)
+    val modelInfo = dataManager.getModelInfo(fullIdStr).getOrElse(null)
     val scene = Scene(IndexedSeq(mi))
     if (modelInfo != null) {
-      scene.front = modelInfo.front
-      scene.up = modelInfo.up
-      scene.unit = modelInfo.unit
+      scene.front = loadOpts.flatMap( x => x.front ).getOrElse(modelInfo.front)
+      scene.up = loadOpts.flatMap( x => x.up ).getOrElse(modelInfo.up)
+      scene.unit = loadOpts.flatMap( x => x.unit ).getOrElse(modelInfo.unit)
       scene.sceneId = if (modelInfo.fullId != null) modelInfo.fullId else modelId
       scene.sceneName = modelInfo.name
       scene.category = modelInfo.category

@@ -2,6 +2,7 @@ package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.common._
+import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadOptions
 import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 import edu.stanford.graphics.shapenet.Constants
 
@@ -13,6 +14,7 @@ import scala.util.matching.Regex
  *  @author Angel Chang
  */
 trait ModelsDb {
+
   def getSources(): Set[String]
 
   def getModelIds(): Seq[String]
@@ -63,12 +65,30 @@ trait ModelsDb {
     }
   }
 
+  // Let the asset loader figure this out (maybe logic should be moved here)
+  var getModelLoadOptions: (String,String) => Option[LoadOpts] = (fullId:String, format:String) => None
 }
+
+case class LoadOpts(path: Option[String] = None,
+                    unit: Option[Double] = None,
+                    up: Option[Vector3f] = None,
+                    front: Option[Vector3f] = None)
 
 class CombinedModelsDb(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   lazy val modelsDbsByName = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
+  getModelLoadOptions = (fullId:String,format:String) => {
+    import scala.util.control.Breaks._
+    var opts: Option[LoadOpts] = None
+    breakable {
+      for (db <- modelsDbs) {
+        opts = db.getModelLoadOptions(fullId, format)
+        if (opts.nonEmpty) break
+      }
+    }
+    opts
+  }
 
   def registerModelsDb(modelsDb: ModelsDb) = {
     val sources = modelsDb.getSources()
@@ -200,8 +220,8 @@ class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = D
         val maxPoint = toVector3f(csvFile.field(row, "maxPoint"))
         val up = toVector3f(csvFile.field(row, "up"))
         val front = toVector3f(csvFile.field(row, "front"))
-        val csvCategories = csvFile.splitField(row, "category", ",").map( x => x.intern() )
-        val allCategories = if (categoryTaxonomy != null) {
+        val csvCategories = csvFile.splitField(row, "category", ",").map( x => x.intern() ) ++ defaultModelInfo.categories
+        val allCategories = if (categoryTaxonomy != null && csvCategories.nonEmpty) {
           // Augment model categories with super classes and order categories from fine to least fine
           val (auxCategories, mainCategories) = csvCategories.partition( x => x.startsWith("_"))
           val augmentedCategories = categoryTaxonomy.getCategoriesWithAncestors(mainCategories)
@@ -259,19 +279,40 @@ class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = D
 
 class ModelsDbWithCategoryCsvs(dir: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends CombinedModelsDb(defaultModelInfo) with Loggable {
   lazy val modelsDbsByCategory = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
+  var categoryTaxonomy: CategoryTaxonomy = null
+  var lowercaseCategoryNames: Boolean = false
 
   def init(catTaxonomy: CategoryTaxonomy = null) {
     // Get csvs from dir
-    val csvFiles = IOUtils.listFiles(dir, new Regex("*.csv$"))
+    categoryTaxonomy = catTaxonomy
+    val csvFiles = IOUtils.listFiles(dir, new Regex(".*\\.csv$"))
     for (categoryCsv <- csvFiles) {
-      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath, defaultModelInfo)
+      val category = IOUtils.stripExtension(categoryCsv.getName)
+      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath, defaultModelInfo.copy( categories = defaultModelInfo.categories :+ category ))
       modelsDb.init(catTaxonomy)
       registerModelsDb(modelsDb)
-      val category = IOUtils.stripExtension(categoryCsv.getName)
       val list = modelsDbsByCategory.getOrElseUpdate(category, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
       list.append(modelsDb)
     }
   }
+
+  override def getModelInfos(source: String, category: String): Seq[ModelInfo] = {
+    if (category != null) {
+      val norm = if (lowercaseCategoryNames) category.toLowerCase() else category
+      val categories = categoryTaxonomy.getCategoriesByName(norm).filter( x => !x.hasParent )
+      val names = categories.map( x => x.name ).toSeq
+      logger.info("Top level matching categories for '" + category + "':" + names.mkString(","))
+      val modelInfos = for (cat <- names) yield {
+        if (modelsDbsByCategory.contains(cat)) {
+          modelsDbsByCategory(cat).flatMap(x => x.getModelInfos(source = source, null))
+        } else Seq()
+      }
+      modelInfos.flatten
+    } else {
+      super.getModelInfos(source, category)
+    }
+  }
+
 }
 
 

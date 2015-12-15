@@ -39,8 +39,8 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
 
   // Select mode
   var selectMode = getStringOption("viewer.selectMode").map( x => SelectMode.withName(x) ).getOrElse(SelectMode.Object)
-  registerMutable[SelectMode.Value]("selectMode", "Select 'Object' or 'Surface' or 'Mesh'",
-    x => selectMode, s => selectMode = SelectMode.withName(s), supportedValues = Seq("Object", "Surface", "Mesh"))
+  registerMutable[SelectMode.Value]("selectMode", "Select 'Object' or 'Mesh'",
+    x => selectMode, s => selectMode = SelectMode.withName(s), supportedValues = Seq("Object", "Mesh"))
 
   // Whether to use debug positions for scene screenshots
   var useDebugPositionsForSceneImages = getBoolean("viewer.useDebugPositionsForSceneImages", false)
@@ -57,27 +57,44 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   registerMutableBoolean("generateCameraPositionsForSceneImages", "Whether to generate multiple camera positions",
     x => generateCameraPositionsForSceneImages, s => generateCameraPositionsForSceneImages = s)
 
-  // Number of images per scene for scene screenshots
-  var nImagesPerScene = getInt("viewer.nImagesPerScene", 4)
-  registerMutable("nImagesPerScene", "Number of images per scene for scene screenshots",
-    x => nImagesPerScene, s => nImagesPerScene = s.toInt)
+  // Number of images per model for model screenshots
+  var nImagesPerModel = getInt("viewer.nImagesPerModel", 8)
+  registerMutable("nImagesPerModel", "Number of images per model for model screenshots",
+    x => nImagesPerModel, s => nImagesPerModel = s.toInt)
 
   // Number of camera positions to optimize over
   var nCameraPositionsForOptimize = getInt("viewer.nCameraPositionsForOptimize", 12)
   registerMutable("nCameraPositionsForOptimize", "Number of camera positions to optimize over",
     x => nCameraPositionsForOptimize, s => nCameraPositionsForOptimize = s.toInt)
 
-  // Number of rotations for reference object
-  var nRotationsForRefObject = getInt("viewer.nRotationsForRefObject", 1)
-  registerMutable("nRotationsForRefObject", "Number of rotations for the reference object (when generating scenes for object pairs)",
-    x => nRotationsForRefObject, s => nRotationsForRefObject = s.toInt)
   var cameraStartOrientation = Math.toRadians(getFloat("viewer.cameraStartOrientation", 0)).toFloat
   registerMutable("cameraStartOrientation", "Starting rotation for camera",
     x => cameraStartOrientation, s => cameraStartOrientation = Math.toRadians(s.toFloat).toFloat )
 
-  var cameraAngleFromHorizontal = Math.toRadians(getFloat("viewer.cameraAngleFromHorizontal", (180.0/8.0).toFloat)).toFloat
+  //Option((math.Pi/6).toFloat
+  var cameraAngleFromHorizontal = Math.toRadians(getFloat("viewer.cameraAngleFromHorizontal", (180.0/6.0).toFloat)).toFloat
   registerMutable("cameraAngleFromHorizontal", "Angle from horizontal for camera",
     x => cameraAngleFromHorizontal, s => cameraAngleFromHorizontal = Math.toRadians(s.toFloat).toFloat )
+
+  var includeCanonicalViews = getBoolean("viewer.includeCanonicalViews", true)
+  registerMutableBoolean("includeCanonicalViews", "Whether to include the 6 canonical views (left, right, top, bottom, front, back) for screenshots",
+    x => includeCanonicalViews, s => includeCanonicalViews = s)
+
+  var cameraPositionStrategy = getStringOption("viewer.cameraPositionStrategy").map( x => CameraPositioningStrategy.withName(x) ).getOrElse(CameraPositioningStrategy.POSITION_TO_FIT)
+  registerMutable[CameraPositioningStrategy.Value]("cameraPositionStrategy", "Select 'distance' or 'fit'",
+    x => cameraPositionStrategy, s => cameraPositionStrategy =
+      if (s == "distance") CameraPositioningStrategy.POSITION_BY_DISTANCE
+      else if (s == "fit") CameraPositioningStrategy.POSITION_TO_FIT
+      else CameraPositioningStrategy.withName(s),
+    supportedValues = Seq("distance", "fit"))
+
+  var randomizeModels = getBoolean("viewer.randomizeModels", true)
+  registerMutableBoolean("randomizeModels", "Randomize ordering of models during screenshot generation",
+    x => randomizeModels, s => randomizeModels = s )
+
+  var skipExisting = getBoolean("viewer.skipExisting", true)
+  registerMutableBoolean("skipExisting", "Skip screenshot generation for model if screenshots already exists",
+    x => skipExisting, s => skipExisting = s )
 
   var skipRotationsForSymmetricRef = getBoolean("viewer.skipRotationsForSymmetricRef", false)
 
@@ -105,8 +122,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   var defaultModelCount = getInt("viewer.defaultModelCount", 1)
   registerMutable("defaultModelCount", "Number of models to use for various operations",
     x => defaultModelCount, s => defaultModelCount = s.toInt)
-
-  var sceneLayoutType = getString("sceneLayout.type")
 
   //  registerMutable("autoAlign", "Auto align scenes or not",
 //    s => autoAlign = ConfigHelper.parseBoolean(s), supportedValues = Seq("on", "off") /*ConfigHelper.getSupportedBooleanStrings */

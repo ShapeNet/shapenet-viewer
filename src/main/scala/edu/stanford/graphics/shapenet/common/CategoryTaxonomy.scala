@@ -34,7 +34,7 @@ class CategoryTaxonomy() {
       case a:java.util.List[_] => {
         val categories = convertCategories(a)
         val map = categories.map( c => c.name -> c ).toMap
-        for (cat <- categoryMap.values) {
+        for (cat <- categories) {
           for (child <- cat.children) {
             val ccat = map(child)
             ccat.parent = cat.name
@@ -185,8 +185,12 @@ class CategoryTaxonomy() {
     categoryMap.getOrElse(category, null)
   }
 
-  def getCategories(synset: String): Set[CategoryInfo] = {
+  def getCategoriesBySynsetId(synset: String): Set[CategoryInfo] = {
     synsetToCategoriesMap.getOrElse(synset, Set())
+  }
+
+  def getCategoriesByName(name: String): Set[CategoryInfo] = {
+    nameToCategoriesMap.getOrElse(name, Set())
   }
 
   def getSynsetId(category: String): String = {
