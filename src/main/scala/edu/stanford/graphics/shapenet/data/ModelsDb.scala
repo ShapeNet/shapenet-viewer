@@ -2,7 +2,6 @@ package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.common._
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadOptions
 import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 import edu.stanford.graphics.shapenet.Constants
 
@@ -14,6 +13,9 @@ import scala.util.matching.Regex
  *  @author Angel Chang
  */
 trait ModelsDb {
+  val name: String
+
+  def getName(): String = name
 
   def getSources(): Set[String]
 
@@ -72,9 +74,11 @@ trait ModelsDb {
 case class LoadOpts(path: Option[String] = None,
                     unit: Option[Double] = None,
                     up: Option[Vector3f] = None,
-                    front: Option[Vector3f] = None)
+                    front: Option[Vector3f] = None,
+                    format: Option[String] = None)
 
-class CombinedModelsDb(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
+class CombinedModelsDb(override val name: String,
+                       val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   lazy val modelsDbsByName = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
@@ -97,17 +101,19 @@ class CombinedModelsDb(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo
       val list = modelsDbsBySource.getOrElseUpdate(source, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
       list.append(modelsDb)
     }
+    val nameList = modelsDbsBySource.getOrElseUpdate(modelsDb.name, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
+    nameList.append(modelsDb)
   }
-  def registerCsvAsModelsDb(modelsCsvFile: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
+  def registerCsvAsModelsDb(name: String, modelsCsvFile: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
     logger.info("Registering " + modelsCsvFile)
-    val db = new ModelsDbWithCsv(modelsCsvFile, defaults)
+    val db = new ModelsDbWithCsv(name, modelsCsvFile, defaults)
     db.init()
     registerModelsDb(db)
     db
   }
-  def registerSolrQueryAsModelsDb(solrQuerier: SolrQuerier, solrQuery: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
+  def registerSolrQueryAsModelsDb(name: String, solrQuerier: SolrQuerier, solrQuery: String, defaults: DefaultModelInfo = defaultModelInfo): ModelsDb = {
     logger.info("Registering query " + solrQuery)
-    val db = new ModelsDbWithSolrQuery(solrQuerier, solrQuery, defaults)
+    val db = new ModelsDbWithSolrQuery(name, solrQuerier, solrQuery, defaults)
     db.init()
     registerModelsDb(db)
     db
@@ -146,7 +152,8 @@ class CombinedModelsDb(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo
 
 }
 
-abstract class ModelsDbWithMap(val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
+abstract class ModelsDbWithMap(override val name: String,
+                               val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   var models: Map[String, ModelInfo] = null
   var sources: Set[String] = null
   var categoryTaxonomy: CategoryTaxonomy = null
@@ -166,8 +173,9 @@ abstract class ModelsDbWithMap(val defaultModelInfo: DefaultModelInfo = DefaultM
   }
 }
 
-class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String,
-                            defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(defaultModelInfo) with Loggable {
+class ModelsDbWithSolrQuery(name: String,
+                            solrQuerier: SolrQuerier, query: String,
+                            defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(name, defaultModelInfo) with Loggable {
   def init(catTaxonomy: CategoryTaxonomy = null)
   {
     categoryTaxonomy = catTaxonomy
@@ -181,7 +189,7 @@ class ModelsDbWithSolrQuery(solrQuerier: SolrQuerier, query: String,
   }
 }
 
-class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(defaultModelInfo) with Loggable {
+class ModelsDbWithCsv(name: String, modelsFile: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDbWithMap(name, defaultModelInfo) with Loggable {
   def init(catTaxonomy: CategoryTaxonomy = null)
   {
     categoryTaxonomy = catTaxonomy
@@ -195,11 +203,6 @@ class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = D
         val f = str.split("\\s*,\\s*").map( s => s.toFloat )
         new Vector3f( f(0), f(1), f(2) )
       } else null
-    }
-    def toDouble(str: String, default: Double = Double.NaN): Double = {
-      if (str != null && str.length > 0) {
-        str.toDouble
-      } else default
     }
     def toDoubleOption(str: String): Option[Double] = {
       if (str != null && str.length > 0) {
@@ -277,7 +280,7 @@ class ModelsDbWithCsv(modelsFile: String, defaultModelInfo: DefaultModelInfo = D
 
 }
 
-class ModelsDbWithCategoryCsvs(dir: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends CombinedModelsDb(defaultModelInfo) with Loggable {
+class ModelsDbWithCategoryCsvs(name: String, dir: String, defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends CombinedModelsDb(name, defaultModelInfo) with Loggable {
   lazy val modelsDbsByCategory = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   var categoryTaxonomy: CategoryTaxonomy = null
   var lowercaseCategoryNames: Boolean = false
@@ -288,7 +291,8 @@ class ModelsDbWithCategoryCsvs(dir: String, defaultModelInfo: DefaultModelInfo =
     val csvFiles = IOUtils.listFiles(dir, new Regex(".*\\.csv$"))
     for (categoryCsv <- csvFiles) {
       val category = IOUtils.stripExtension(categoryCsv.getName)
-      val modelsDb = new ModelsDbWithCsv(categoryCsv.getAbsolutePath, defaultModelInfo.copy( categories = defaultModelInfo.categories :+ category ))
+      val modelsDb = new ModelsDbWithCsv(name + "-" + category, categoryCsv.getAbsolutePath,
+        defaultModelInfo.copy( categories = defaultModelInfo.categories :+ category ))
       modelsDb.init(catTaxonomy)
       registerModelsDb(modelsDb)
       val list = modelsDbsByCategory.getOrElseUpdate(category, new scala.collection.mutable.ArrayBuffer[ModelsDb]())
@@ -312,7 +316,4 @@ class ModelsDbWithCategoryCsvs(dir: String, defaultModelInfo: DefaultModelInfo =
       super.getModelInfos(source, category)
     }
   }
-
 }
-
-
