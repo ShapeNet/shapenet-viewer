@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/ShapeNet/shapenet-viewer.svg)](https://travis-ci.org/ShapeNet/shapenet-viewer)
 # [ShapeNet](www.shapenet.org) Model Viewer and Renderer
 
 This Java+Scala code was used to render the [ShapeNet](www.shapenet.org) model screenshots and thumbnails.  It can handle loading of OBJ+MTL, COLLADA DAE, KMZ, and PLY format 3D meshes.
