@@ -18,13 +18,12 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val useShadow = getBoolean("viewer.useShadow", false)
 
   val modelCacheSize = getIntOption("viewer.modelCacheSize")
-  val loadFormat = getStringOption("viewer.loadFormat").map( s => LoadFormat.withName(s) )
   val offscreenMode = config.getBoolean("viewer.offscreen")
   //val commandsFile = config.getString("viewer.commands.file")
   //val commands = Seq("load random")
   val commands = config.getStringList("viewer.commands").toIndexedSeq
 
-  val userId = getString("viewer.userId", "babysherlock")
+  val userId = getString("viewer.userId", "shapenetViewer")
 
   // Surface extraction config
   val surfaceExtractionRandomizeModels = getBoolean("surfaceExtraction.randomizeModels")
@@ -35,7 +34,12 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   // Mutable configuration
   var defaultSceneDistanceScale = getFloat("viewer.sceneDistanceScale", 1.0f)
   var defaultModelDistanceScale = getFloat("viewer.modelDistanceScale", 2.0f)
+  registerMutable[Float]("defaultModelDistanceScale", "Distance factor away from model",
+    x => defaultModelDistanceScale, s => defaultModelDistanceScale = s.toFloat)
+
   var falseMaterialBlendOld = getFloat("viewer.falseMaterialBlendOld", 0.0f)
+
+  var loadFormat = getStringOption("viewer.loadFormat").map( s => LoadFormat(s) )
 
   // Select mode
   var selectMode = getStringOption("viewer.selectMode").map( x => SelectMode.withName(x) ).getOrElse(SelectMode.Object)
@@ -51,11 +55,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   var optimizeCameraPositionForSceneImages = getBoolean("viewer.optimizeCameraPositionForSceneImages", false)
   registerMutableBoolean("optimizeCameraPositionForSceneImages", "Whether to optimize camera position for scene screenshots",
     x => optimizeCameraPositionForSceneImages, s => optimizeCameraPositionForSceneImages = s)
-
-  // Whether to generate multiple camera positions
-  var generateCameraPositionsForSceneImages = getBoolean("viewer.generateCameraPositionsForSceneImages", true)
-  registerMutableBoolean("generateCameraPositionsForSceneImages", "Whether to generate multiple camera positions",
-    x => generateCameraPositionsForSceneImages, s => generateCameraPositionsForSceneImages = s)
 
   // Number of images per model for model screenshots
   var nImagesPerModel = getInt("viewer.nImagesPerModel", 8)
@@ -117,11 +116,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
 
   // ambient occlusion
   var useAmbientOcclusion = getBoolean("viewer.useAmbientOcclusion", true)
-
-  // number of models to use...
-  var defaultModelCount = getInt("viewer.defaultModelCount", 1)
-  registerMutable("defaultModelCount", "Number of models to use for various operations",
-    x => defaultModelCount, s => defaultModelCount = s.toInt)
 
   //  registerMutable("autoAlign", "Auto align scenes or not",
 //    s => autoAlign = ConfigHelper.parseBoolean(s), supportedValues = Seq("on", "off") /*ConfigHelper.getSupportedBooleanStrings */

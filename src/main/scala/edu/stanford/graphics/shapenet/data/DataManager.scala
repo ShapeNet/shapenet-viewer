@@ -2,9 +2,8 @@ package edu.stanford.graphics.shapenet.data
 
 import java.io.File
 
-import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.{DefaultModelInfo, CategoryTaxonomy, ModelInfo}
-import edu.stanford.graphics.shapenet.util.{WebCacheUtils, IOUtils}
+import edu.stanford.graphics.shapenet.common.{CategoryTaxonomy, ModelInfo}
+import edu.stanford.graphics.shapenet.util.IOUtils
 
 /**
  * Handles data management
@@ -12,13 +11,6 @@ import edu.stanford.graphics.shapenet.util.{WebCacheUtils, IOUtils}
  */
 class DataManager extends CombinedModelsDb("DataManager") {
   lazy val solrQuerier = new SolrQuerier
-  //val shapeNetCoreModelsDb = registerSolrQueryAsModelsDb(solrQuerier, "datasets:ShapeNetCore")
-  lazy val shapeNetCoreModelsDb = {
-    WebCacheUtils.checkedFetchAndSave(Constants.SHAPENET_CORE_MODELS3D_CSV_SOLR_URL, Constants.SHAPENET_CORE_MODELS3D_CSV_FILE, 10000)
-    registerCsvAsModelsDb("ShapeNetCore", Constants.SHAPENET_CORE_MODELS3D_CSV_FILE)
-  }
-  lazy val wssModelsDb = registerCsvAsModelsDb("wss", Constants.WSS_MODELS3D_CSV_FILE,
-    DefaultModelInfo(Constants.DEFAULT_MODEL_UNIT, Constants.WSS_MODEL_UP, Constants.WSS_MODEL_FRONT))
 
   /* Model dbs */
   private def getModelInfoFromSolr(modelId: String): Option[ModelInfo] = {
@@ -30,7 +22,7 @@ class DataManager extends CombinedModelsDb("DataManager") {
     else getModelInfoFromSolr(modelId)
   }
 
-  def registerShapeNetCore(dirpath: String, loadFormat: String = "obj"): Unit = {
+  def registerShapeNetCore(dirpath: String): Unit = {
     val categoryTaxonomy = new CategoryTaxonomy()
     val dir = IOUtils.ensureDirname(dirpath)
     categoryTaxonomy.init(dir + "taxonomy.json", "json")
@@ -42,13 +34,12 @@ class DataManager extends CombinedModelsDb("DataManager") {
     modelsDb.getModelLoadOptions = (fullId: String, format: String) => {
       val modelInfo = getModelInfo(fullId)
       var opts: Option[LoadOpts] = None
-      if (modelInfo.isDefined && modelInfo.get.category.nonEmpty) {
+      if (modelInfo.isDefined && modelInfo.get.category.nonEmpty && format != "kmz") {
         val x = modelInfo.get
         val filename = dir + x.category.head + File.separator + x.id + File.separator + "model.obj"
         if (IOUtils.isReadableFileWithData(filename)) {
           opts = Some(LoadOpts(Some(filename),
-            Some(defaultModelInfo.unit), Some(defaultModelInfo.up), Some(defaultModelInfo.front),
-            Some(loadFormat)))
+            Some(defaultModelInfo.unit), Some(defaultModelInfo.up), Some(defaultModelInfo.front)))
         }
       }
       opts

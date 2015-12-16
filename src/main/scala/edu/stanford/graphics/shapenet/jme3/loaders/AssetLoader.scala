@@ -55,6 +55,10 @@ class AssetLoader(val assetCreator: AssetCreator,
     )
   )
 
+  def clearCache(): Unit = {
+    modelCache.clear()
+  }
+
   // Load options for loading models via obj
   private val _useObjGz: Boolean = false
   private val _wssObjDir: String = if (_useObjGz) Constants.WSS_OBJGZ_DIR else Constants.WSS_OBJ_DIR
@@ -71,10 +75,12 @@ class AssetLoader(val assetCreator: AssetCreator,
       geometryPath = Option(_wssObjDir),
       materialsPath = Option(Constants.WSS_TEXTURE_DIR),
       compressionExt = if (_useObjGz) "gz" else null,
+      loader = "obj",
       modelIdToPath = (id: String) => _wssObjDir + "/" + id + ".obj"
     ),
     "archive3d" -> new AssetLoader.LoadOptions(
       doubleSided = true,
+      loader = "obj",
       modelIdToPath = (id: String) => Seq(Constants.ARCHIVE3D_DATA_DIR, "models",id, id + ".obj").mkString("/")
     ),
     "3dw" -> new AssetLoader.LoadOptions(
@@ -82,6 +88,7 @@ class AssetLoader(val assetCreator: AssetCreator,
       //doubleSided = true,
       ignoreZeroRGBs = true,
       defaultColor = Array(0.0, 0.0, 0.0),
+      loader = "kmz",
       modelIdToPath = (id: String) => {
         val (id1,id2) = id.splitAt(6)
         val prefix = id1.mkString("/") + id2
@@ -91,10 +98,12 @@ class AssetLoader(val assetCreator: AssetCreator,
     ),
     "vf" -> new AssetLoader.LoadOptions(
       doubleSided = true,
+      loader = "ply",
       modelIdToPath = (id: String) => Seq(Constants.VF_DATA_DIR, id + "d.ply").mkString("/")
     ),
     "yobi3d" -> new AssetLoader.LoadOptions(
       doubleSided = true,
+      loader = "obj",
       modelIdToPath = (id: String) => Seq("data", "models", "bikes", "02834778", id, "model.obj").mkString("/")
     ),
     "raw" -> new AssetLoader.LoadOptions(
@@ -107,6 +116,7 @@ class AssetLoader(val assetCreator: AssetCreator,
       //doubleSided = true,
       ignoreZeroRGBs = true,
       defaultColor = Array(0.0, 0.0, 0.0),
+      loader = "kmz",
       modelIdToPath = (id: String) => {
         val (id1,id2) = id.splitAt(6)
         val prefix = id1.mkString("/") + id2
@@ -382,11 +392,20 @@ class AssetLoader(val assetCreator: AssetCreator,
 
 object AssetLoader {
   object LoadFormat extends Enumeration {
-    val OBJ_FORMAT, UTF8_FORMAT = Value
+    val OBJ_FORMAT, UTF8_FORMAT, KMZ_FORMAT = Value
     def shortName(format: LoadFormat.Value): String = {
       format match {
         case OBJ_FORMAT => "obj"
         case UTF8_FORMAT => "utf8"
+        case KMZ_FORMAT => "kmz"
+      }
+    }
+    def apply(f: String): LoadFormat.Value = {
+      f match {
+        case "obj" => OBJ_FORMAT
+        case "utf8" => UTF8_FORMAT
+        case "kmz" => KMZ_FORMAT
+        case _ => withName(f)
       }
     }
   }

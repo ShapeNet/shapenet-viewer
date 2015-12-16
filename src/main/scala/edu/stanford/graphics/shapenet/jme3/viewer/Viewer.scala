@@ -28,7 +28,7 @@ import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.gui.{MeshTreePanel, SceneTreePanel, TreeNodeInfo}
 import edu.stanford.graphics.shapenet.jme3.app.ModelInfoAppState
 import edu.stanford.graphics.shapenet.jme3.geom.BoundingBoxUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadProgress, LoadProgressListener}
+import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadFormat, LoadProgress, LoadProgressListener}
 import edu.stanford.graphics.shapenet.jme3._
 import edu.stanford.graphics.shapenet.jme3.{Jme, JmeUtils}
 import edu.stanford.graphics.shapenet.util.ConversionUtils._
@@ -196,7 +196,11 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         modelInfoAppState.setShowModelLabel(config.showModelLabel)
       }
     )
-
+    config.registerMutable("loadFormat", "Set default load format for models",
+      x => config.loadFormat, s => {
+        config.loadFormat = Some(LoadFormat(s))
+        jme.defaultLoadFormat = config.loadFormat
+      })
   }
 
   def hideMenu() {
@@ -981,11 +985,6 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
           logger.error ("Error initializing ShapeNetCore: " + config.shapeNetCoreDir, ex)
         }
       }
-    }
-    if (jme.dataManager.getSources().isEmpty) {
-      // force loading of shapenet core models db from web
-      logger.info("Loading ShapeNetCore from web")
-      jme.dataManager.shapeNetCoreModelsDb
     }
     this.falseBkMaterial = jme.getSimpleFalseColorMaterial(0.5, 0.5, 0.5)
 

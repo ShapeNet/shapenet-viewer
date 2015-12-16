@@ -2,6 +2,7 @@ package edu.stanford.graphics.shapenet.jme3.viewer
 
 import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.common.{CategoryUtils, FullId}
+import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
 import edu.stanford.graphics.shapenet.util.{ConfigHelper, IOUtils}
 import de.lessvoid.nifty.controls.{ConsoleCommands, Console}
 import de.lessvoid.nifty.controls.ConsoleCommands.ConsoleCommand
@@ -125,10 +126,6 @@ class CommandConsole(val controller: ViewerController,
         case Array(_, "model", "screenshots" | "stats", "query", query, limit) => {
           val modelIds = viewer.dataManager.solrQuerier.queryModelIds(query, limit.toInt, Seq(), false)
           processModels(args(2), modelIds.map( x => x._1))
-        }
-        case Array(_, "model", "screenshots" | "stats", "ShapeNetCore", category) => {
-          val modelIds = viewer.dataManager.shapeNetCoreModelsDb.getModelIds(null, category)
-          processModels(args(2), modelIds)
         }
         case Array(_, "model", "screenshots" | "stats", "all") => {
           val modelIds = viewer.dataManager.getModelIds()
@@ -371,7 +368,14 @@ class CommandConsole(val controller: ViewerController,
     override def aliases = Seq("c")
     override def description = "Clear selected nodes and debug markers"
     override def executeImpl(args: Array[String]) {
-      viewer.clearSelectedNodes()
+      args match {
+        case Array(_, "cache") => {
+          viewer.jme.clearCache(true)
+        }
+        case _ => {
+          viewer.clearSelectedNodes()
+        }
+      }
     }
   }
 

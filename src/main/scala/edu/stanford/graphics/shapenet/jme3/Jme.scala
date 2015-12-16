@@ -58,7 +58,7 @@ import scala.util.matching.Regex
 class Jme(val assetManager: AssetManager,
           val dataManager: DataManager,
           modelCacheSize: Option[Int] = None,
-          defaultLoadFormat: Option[LoadFormat.Value] = None,
+          var defaultLoadFormat: Option[LoadFormat.Value] = None,
           val alwaysClearCache: Boolean = true) extends JmeUtils with Loggable {
   lazy val assetCreator = new JmeAssetCreator(assetManager)
   lazy val assetLoader = new AssetLoader(assetCreator,
@@ -80,9 +80,12 @@ class Jme(val assetManager: AssetManager,
   implicit def scene3DLoadProgressListenerConvert(in: LoadProgressListener[GeometricScene[Node]]) =
     if (in != null) new SceneLoadProgressListener(in) else null
 
-  def clearCache() {
+  def clearCache(clearAssetCache: Boolean = false) {
     if (assetManager.isInstanceOf[DesktopAssetManager] && alwaysClearCache) {
       assetManager.asInstanceOf[DesktopAssetManager].clearCache()
+    }
+    if (clearAssetCache) {
+      assetLoader.clearCache()
     }
   }
   def loadModel(modelId: String) = assetLoader.loadModel(modelId).asInstanceOf[Model[Node]]

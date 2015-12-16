@@ -80,22 +80,11 @@ trait Constants {
   val MATERIAL_DENSITIES_FILE = CATEGORIES_DATA_DIR + "densities.csv"
 
   val MODELS_DIR = if (USE_LOCAL_DATA) DATA_DIR + "models" + separator else MISC_DATA_HOST + "/models/"
-
-  /** File generated from solr */
   val MODELS_DATA_DIR = if (USE_LOCAL_DATA) DATA_DIR + "models/data-tables/" else TEXT2SCENE_DIR  + "models/data-tables/"
-  val WSS_MODELS3D_CSV_FILE = MODELS_DATA_DIR + "models3d.csv"
   // Computed stats files
   val COMPUTED_MODEL_STATS_FILE = MODELS_DATA_DIR + "computedModelStats.csv"
 
-  // Surfaces extractions
-  val SURFACES_OBJ_DIR = TEXT2SCENE_DIR + "surfaces.obj/"
-  val SURFACES_UTF8_DIR = TEXT2SCENE_DIR + "surfaces.utf8/"
-  val SURFACES_DIR = SURFACES_OBJ_DIR
   val DEBUG_DIR = WORK_DIR + "debug" + File.separator
-
-  val ANNOTATIONS_SUBMIT_URL = SHAPENET_HOST
-  val ANNOTATIONS_SOLR_URL = SHAPENET_HOST + "/annotations/solr"
-  //val ANNOTATIONS_SOLR_URL = "http://localhost:8499/solr"
 
   val ARCHIVE3D_DATA_DIR = SHAPENET_HOST + "/archive3d/data/"
   val WSS_DATA_DIR = SHAPENET_HOST + "/wss/data/"
@@ -104,16 +93,10 @@ trait Constants {
   val WSS_OBJ_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/models/" else MISC_DATA_HOST + "/g3dw/models/"
   val WSS_OBJGZ_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/models/" else TEXT2SCENE_DIR  + "/models/repositories/g3dw/models/"
   val WSS_TEXTURE_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/textures/" else MISC_DATA_HOST + "/g3dw/textures/"
-  val MODEL_VIEWER_URL = SHAPENET_HOST + "/model-viewer"
 
   // Models and scenes solr configuration
-  //  val MODELS3D_SOLR_URL = SOLR_HOST + "/solr/models3d"
-  //  val SCENES_SOLR_URL = SOLR_HOST + "/solr/scenes"
   val MODELS3D_SOLR_URL = SHAPENET_HOST + "/models3d/solr"
   val SCENES_SOLR_URL = SHAPENET_HOST + "/scenes/solr"
-
-  val SHAPENET_CORE_MODELS3D_CSV_FILE = WORK_DIR + "shapeNetCore.models3d.csv"
-  val SHAPENET_CORE_MODELS3D_CSV_SOLR_URL = MODELS3D_SOLR_URL + "/select?sort=fullId+asc&q=hasModel%3Atrue&rows=100000&fl=fullId%2CminPoint%2CmaxPoint%2Ccategory%2Ccategory0%2Cname%2Ctags%2Cscenes%2Cdatasets%2Cunit%2Cup%2Cfront&fq=%2Bdatasets%3A(ShapeNetCore)&wt=csv"
 
   // Constants for scenes
   val SCENES_DIR = DATA_DIR + "scenes" + File.separator
