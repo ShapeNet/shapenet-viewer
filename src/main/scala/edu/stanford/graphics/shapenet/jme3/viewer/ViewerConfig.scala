@@ -25,12 +25,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
 
   val userId = getString("viewer.userId", "shapenetViewer")
 
-  // Surface extraction config
-  val surfaceExtractionRandomizeModels = getBoolean("surfaceExtraction.randomizeModels")
-  val surfaceExtractionSkipDone = getBoolean("surfaceExtraction.skipDone")
-  val surfaceExtractionUseVertices = getBoolean("surfaceExtraction.useVertices", true)
-  val surfaceExtractionRestrictPlanar = getBoolean("surfaceExtraction.restrictPlanar", false)
-
   // Mutable configuration
   var defaultSceneDistanceScale = getFloat("viewer.sceneDistanceScale", 1.0f)
   var defaultModelDistanceScale = getFloat("viewer.modelDistanceScale", 2.0f)
@@ -99,8 +93,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   var skipExisting = getBoolean("viewer.skipExisting", true)
   registerMutableBoolean("skipExisting", "Skip screenshot generation for model if screenshots already exists",
     x => skipExisting, s => skipExisting = s )
-
-  var skipRotationsForSymmetricRef = getBoolean("viewer.skipRotationsForSymmetricRef", false)
 
   var showModelLabel = getBoolean("viewer.showModelLabel", false)
 
