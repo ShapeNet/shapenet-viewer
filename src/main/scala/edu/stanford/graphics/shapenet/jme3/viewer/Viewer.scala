@@ -1047,7 +1047,9 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         commands.enqueue("exit")
       }
     } else {
-      loadModel("3dw.653c0f8b819872b41a6af642cfc1a2bc")
+      if (config.defaultModelId.nonEmpty) {
+        loadModel(config.defaultModelId)
+      }
     }
   }
 
