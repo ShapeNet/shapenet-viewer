@@ -41,6 +41,11 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
 
   var loadFormat = getStringOption("viewer.loadFormat").map( s => LoadFormat(s) )
 
+  // Next output dir
+  var useNestedOutputDir = getBoolean("viewer.useNestedOutputDir", false)
+  registerMutableBoolean("useNestedOutputDir", "Whether the output directory should be nested for 3dw models",
+    x => useNestedOutputDir, s => useNestedOutputDir = s)
+
   // Select mode
   var selectMode = getStringOption("viewer.selectMode").map( x => SelectMode.withName(x) ).getOrElse(SelectMode.Object)
   registerMutable[SelectMode.Value]("selectMode", "Select 'Object' or 'Mesh'",

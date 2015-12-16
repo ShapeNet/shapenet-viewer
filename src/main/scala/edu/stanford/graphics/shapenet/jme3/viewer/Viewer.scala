@@ -828,13 +828,17 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     }
   }
 
-  def saveModelScreenshots(modelIds: Iterable[String]) {
+  def saveModelScreenshots(modelIds: Iterable[String], outputDir: Option[String] = null) {
     def getOuputDirFn(fullId: FullId): String = {
       fullId.source match {
         case "3dw" => {
-          val (id1, id2) = fullId.id.splitAt(6)
-          val prefix = id1.mkString ("/") + id2
-          fullId.source + File.separator + prefix + File.separator + fullId.id + File.separator
+          if (config.useNestedOutputDir) {
+            val (id1, id2) = fullId.id.splitAt(6)
+            val prefix = id1.mkString("/") + id2
+            fullId.source + File.separator + prefix + File.separator + fullId.id + File.separator
+          } else {
+            fullId.source + File.separator + fullId.id + File.separator
+          }
         }
         case _ => fullId.source + File.separator + fullId.id + File.separator
       }
@@ -857,7 +861,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
     }
     sceneImagesGen.configCameraPositions(cameraPositionGenerator)
-    sceneImagesGen.process(modelIds, screenShotDir + "models" + File.separator)
+    sceneImagesGen.process(modelIds, outputDir.getOrElse(screenShotDir + "models" + File.separator))
   }
 
   def saveModelStats(modelIds: Iterable[String], filename: String, appendToExisting: Boolean = false): Unit = {

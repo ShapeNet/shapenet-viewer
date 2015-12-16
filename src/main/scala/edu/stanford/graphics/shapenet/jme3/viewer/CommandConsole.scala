@@ -1,5 +1,7 @@
 package edu.stanford.graphics.shapenet.jme3.viewer
 
+import java.io.File
+
 import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.common.{CategoryUtils, FullId}
 import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
@@ -137,7 +139,8 @@ class CommandConsole(val controller: ViewerController,
         }
         case Array(_, "model", "screenshots" | "stats", "all", source, category) => {
           val modelIds = viewer.dataManager.getModelIds(source, category)
-          processModels(args(2), modelIds.toSeq)
+          processModels(args(2), modelIds.toSeq,
+            Option(viewer.screenShotDir + File.separator + "modelsByCategory" + File.separator + category + File.separator))
         }
         case Array(_, "model", "screenshots" | "stats", "test", modelId) => {
           val modelIds = Seq(modelId)
@@ -160,10 +163,10 @@ class CommandConsole(val controller: ViewerController,
         }
       }
     }
-    private def processModels(cmd: String, modelIds: Iterable[String]): Unit = {
+    private def processModels(cmd: String, modelIds: Iterable[String], outputDir: Option[String] = None): Unit = {
       cmd match {
         case "stats" => viewer.saveModelStats(modelIds, Constants.WORK_DIR + "modelstats.csv")
-        case "screenshots" => viewer.saveModelScreenshots(modelIds)
+        case "screenshots" => viewer.saveModelScreenshots(modelIds, outputDir)
       }
     }
 

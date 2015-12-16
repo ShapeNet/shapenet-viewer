@@ -31,7 +31,8 @@ class SceneImagesGenerator(val viewer: Viewer,
     this.camPositionGenerator = cameraPositionGenerator
   }
 
-  def process(inputSceneIds: Iterable[String], outputDir: String, appendMode: Boolean = false)(implicit jme: Jme) {
+  def process(inputSceneIds: Iterable[String], outputDirName: String, appendMode: Boolean = false)(implicit jme: Jme) {
+    val outputDir = IOUtils.ensureDirname(outputDirName)
     if (camPositionGenerator == null) {
       configCameraPositions()
     }
