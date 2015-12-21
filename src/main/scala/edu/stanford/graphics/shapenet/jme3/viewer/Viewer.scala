@@ -256,9 +256,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   }
 
   private lazy val ambientOcclusionFilter = {
-    val ssaof = new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f)
-    fpp.addFilter(ssaof)
-    ssaof
+    new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f)
   }
   def configAmbientOcclusionFilter(): Unit = {
     _configFilter(ambientOcclusionFilter, config.useAmbientOcclusion)
