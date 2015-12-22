@@ -243,7 +243,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     }
     if (this.floor != null) {
       val floorShadowMode = if (useShadow) ShadowMode.Receive else ShadowMode.Off
-      this.floor.setShadowMode(ShadowMode.Receive)
+      this.floor.setShadowMode(floorShadowMode)
     }
   }
 
