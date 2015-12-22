@@ -426,7 +426,7 @@ object AssetLoader {
                      normalizeRGB: Boolean = false,
                      ignoreZeroRGBs: Boolean = false,
                      invertTransparency: Boolean = false,
-                     supportShadow: Boolean = Constants.useShadows,
+                     supportShadow: Boolean = false,
                      defaultColor: Array[Double] = null,
                      loader: String = null,
                      compressionExt: String = null,

@@ -16,7 +16,6 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val height = Option(getIntOption("viewer.height").getOrElse(768))
   val showSettings = getBoolean("viewer.showSettings", false)
   val cacheWebFiles = getBoolean("viewer.cacheWebFiles", true)
-  val useShadow = getBoolean("viewer.useShadow", false)
 
   val modelCacheSize = getIntOption("viewer.modelCacheSize")
   val offscreenMode = config.getBoolean("viewer.offscreen")
@@ -27,6 +26,8 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val userId = getString("viewer.userId", "shapenetViewer")
 
   // Mutable configuration
+  var useShadow = getBoolean("viewer.useShadow", false)
+
   var defaultSceneDistanceScale = getFloat("viewer.sceneDistanceScale", 1.0f)
   var defaultModelDistanceScale = getFloat("viewer.modelDistanceScale", 2.0f)
   registerMutable[Float]("defaultModelDistanceScale", "Distance factor away from model",
