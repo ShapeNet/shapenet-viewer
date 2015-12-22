@@ -828,7 +828,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     }
   }
 
-  def saveModelScreenshots(modelIds: Iterable[String], outputDir: Option[String] = null) {
+  def saveModelScreenshots(modelIds: Iterable[String], outputDir: Option[String] = None) {
     def getOuputDirFn(fullId: FullId): String = {
       fullId.source match {
         case "3dw" => {
