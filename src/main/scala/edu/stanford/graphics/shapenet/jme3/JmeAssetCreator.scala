@@ -125,16 +125,6 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
   }
 
   override def finalizeScene(scene: GeometricScene[Node]) {
-    if (Constants.useShadows) {
-      if (scene.scene != null) {
-        for ((modelInstance,i) <- scene.modelInstances.zipWithIndex) {
-          val obj = scene.scene.objects(i)
-          if (obj.supportParentIndex < 0) {
-            modelInstance.nodeSelf.setShadowMode(ShadowMode.Receive)
-          }
-        }
-      }
-    }
     scene.node.updateGeometricState()
     scene.node.updateModelBound()
   }

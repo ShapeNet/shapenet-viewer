@@ -103,7 +103,6 @@ trait Constants {
   val SCENES_DATA_DIR = if (USE_LOCAL_DATA) SCENES_DIR + "data-tables/" else TEXT2SCENE_DIR  + "scenes/data-tables/"
 
   val phi = (1 + math.sqrt(5))/2
-  var useShadows = false
 }
 
 object Constants extends Constants

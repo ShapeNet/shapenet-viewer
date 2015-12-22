@@ -102,7 +102,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   var autoAlign = true
 
   // Shadow stuff
-  val useShadows: Boolean = Constants.useShadows
+  private var directionalLightForShadow: DirectionalLight = null
   private var dlsr: DirectionalLightShadowRenderer = null
   private var dlsf: DirectionalLightShadowFilter = null
   private var fpp: FilterPostProcessor = null
@@ -153,6 +153,14 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   val commands = new mutable.Queue[String]()
 
   def initConfig(): Unit = {
+    config.registerMutableBoolean("useShadow", "Use shadows or not",
+      x => config.useShadow, s => {
+        config.useShadow = s
+        // Update shadows...
+        this.configShadowProcessors()
+        this.updateSceneForShadows(config.useShadow)
+      })
+
     config.registerMutableBoolean("addFloor", "Use floor or not",
       x => config.addFloor, s => {
         config.addFloor = s
@@ -208,18 +216,40 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   }
 
   def setupViewProcessors(directionalLight: DirectionalLight): Unit = {
-    if (useShadows) {
-      // TODO: Sometimes there are artifacts like seen in http://dovahkiin.stanford.edu/text2scene/eval/full-layout/seedsents-sempre/summary.html
-      // We may need to remove old processors to prevent artifacts like remaining shadows in a new empty room
-      // Things seems okay again for some reason....
-      //      if (dlsr != null) {
-      //        //viewPort.removeProcessor(dlsr)
-      //      }
-      //      if (fpp != null) {
-      //        //viewPort.removeProcessor(fpp)
-      //        //fpp.cleanup()
-      //        //fpp.removeAllFilters()
-      //      }
+    // TODO: Sometimes there are artifacts like seen in http://dovahkiin.stanford.edu/text2scene/eval/full-layout/seedsents-sempre/summary.html
+    // We may need to remove old processors to prevent artifacts like remaining shadows in a new empty room
+    // Things seems okay again for some reason....
+    //      if (dlsr != null) {
+    //        //viewPort.removeProcessor(dlsr)
+    //      }
+    //      if (fpp != null) {
+    //        //viewPort.removeProcessor(fpp)
+    //        //fpp.cleanup()
+    //        //fpp.removeAllFilters()
+    //      }
+    this.directionalLightForShadow = directionalLight
+    configShadowProcessors(directionalLight)
+    configAmbientOcclusionFilter()
+    configOutlineFilter()
+  }
+
+  def updateSceneForShadows(useShadow: Boolean) = {
+    val shadowMode = if (useShadow) ShadowMode.CastAndReceive else ShadowMode.Off
+    for (i <- 0 until scene.getNumberOfObjects()) {
+      val m = scene.getModelInstance(i)
+      if (m != null && m.node != null) {
+        m.nodeSelf.setShadowMode(shadowMode)
+      }
+    }
+    if (this.floor != null) {
+      val floorShadowMode = if (useShadow) ShadowMode.Receive else ShadowMode.Off
+      this.floor.setShadowMode(floorShadowMode)
+    }
+  }
+
+  def configShadowProcessors(directionalLight: DirectionalLight = this.directionalLightForShadow, flag: Boolean = config.useShadow): Unit = {
+    if (flag) {
+      // Shadows on!
       // Actual light is set after the light is created
       val shadowMapSize = 2048
       if (dlsr == null) {
@@ -238,27 +268,23 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         dlsf.setLambda(0.55f)
         dlsf.setShadowIntensity(0.35f)
         dlsf.setEdgeFilteringMode(EdgeFilteringMode.Bilinear)
-        dlsf.setEnabled(true)
       }
+      dlsf.setEnabled(true)
 
-      if (fpp == null) {
-        fpp = new FilterPostProcessor(assetManager)
-        fpp.addFilter(dlsf)
-        viewPort.addProcessor(fpp)
-      }
+      _configFilter(dlsf, true)
 
       dlsr.setLight(directionalLight)
       dlsf.setLight(directionalLight)
+    } else {
+      // Remove shadow processing
+      if (dlsf != null) {
+        _configFilter(dlsf, false)
+      }
     }
-
-    configAmbientOcclusionFilter()
-    configOutlineFilter()
   }
 
   private lazy val ambientOcclusionFilter = {
-    val ssaof = new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f)
-    fpp.addFilter(ssaof)
-    ssaof
+    new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f)
   }
   def configAmbientOcclusionFilter(): Unit = {
     _configFilter(ambientOcclusionFilter, config.useAmbientOcclusion)
@@ -579,8 +605,13 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     state = ViewerState.READY
   }
 
+  def finalizeScene(scene: GeometricScene[Node]): Unit = {
+    updateSceneForShadows(config.useShadow)
+  }
+
   def onSceneLoadedSuccess(scene: GeometricScene[Node], distanceScale: Float, onloaded: () => _ = null) {
     this.scene = scene
+    finalizeScene(scene)
     if (this.modelInfoAppState != null) {
       this.modelInfoAppState.setScene(scene)
     }
@@ -1478,7 +1509,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     if (config.useRadialFloor) {
       jme.alignLocalToUpFrontAxes(floor_geo, Vector3f.UNIT_Z, Vector3f.UNIT_X, Vector3f.UNIT_Y, Vector3f.UNIT_X)
     }
-    if (useShadows) {
+    if (config.useShadow) {
       floor_geo.setShadowMode(ShadowMode.Receive)
       //TangentBinormalGenerator.generate(floor_geo)
     }
@@ -1711,8 +1742,6 @@ object Viewer extends App {
   val config = ConfigHelper.fromOptions(args:_*)
   // Run viewer
   val viewerConfig = ViewerConfig(config)
-  // SET USE SHADOWS FOR VIEWER
-  Constants.useShadows = viewerConfig.useShadow
   WebUtils.useCache = viewerConfig.cacheWebFiles
   val app = new Viewer(viewerConfig)
   app.setShowSettings(viewerConfig.showSettings)
