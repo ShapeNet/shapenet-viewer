@@ -56,7 +56,7 @@ All screenshots are saved to `$WORK_DIR/screenshots/models` or `$WORK_DIR/screen
 
 The viewer caches loaded models in memory so if you modify a model and would like to reload it from disk, use the `clear cache` command.
 
-If you would like to switch to loading `KMZ` models from the ShapeNet web server to compare with the `OBJ+MTL` models, use the command `set loadFormat kmz` (and `set loadFormat obj` to revert to default local loading).
+If you would like to switch to loading `KMZ` models from the ShapeNet web server to compare with the `OBJ+MTL` models, use the command `set loadFormat kmz` (and `set loadFormat obj` to revert to default local loading).  The ShapeNet website thumbnails were all rendered from the `KMZ` format models.
 
 Contact
 =======
