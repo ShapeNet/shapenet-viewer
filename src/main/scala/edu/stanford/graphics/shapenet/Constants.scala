@@ -44,8 +44,6 @@ trait Constants {
   val separator = if (USE_LOCAL_DATA) File.separator else "/"
 
   val SHAPENET_SYNSETS_SOLR_URL = SHAPENET_HOST + "/shapenet-synsets/solr"
-//  val SHAPENET_SYNSETS_CSV_FILE = DATA_DIR + "shapenet" + File.separator + "view_synset.csv"
-  val SHAPENET_SYNSETS_CSV_FILE = DATA_DIR + "shapenet" + File.separator + "annotation.view_synset.csv.gz"
   val WORK_SCREENSHOTS_DIR = WORK_DIR + "screenshots" + File.separator
 
   // Some arbitrary constants for screen width and height
