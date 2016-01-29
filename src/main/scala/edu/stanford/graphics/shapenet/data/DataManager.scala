@@ -47,6 +47,36 @@ class DataManager extends CombinedModelsDb("DataManager") {
 
     registerModelsDb(modelsDb)
   }
+
+  def registerShapeNetSem(dirpath: String): Unit = {
+    val dir = IOUtils.ensureDirname(dirpath)
+    val metadataFilename = dir + "metadata.csv"
+    //categoryTaxonomy.init(dir + "taxonomy.json", "json")
+    val modelsDb = new ModelsDbWithCsv("ShapeNetSem", metadataFilename)
+    modelsDb.init()
+    //modelsDb.init(categoryTaxonomy)
+    //modelsDb.lowercaseCategoryNames = true
+
+    // customized load path
+    modelsDb.getModelLoadOptions = (fullId: String, format: String) => {
+      val modelInfo = getModelInfo(fullId)
+      var opts: Option[LoadOpts] = None
+      if (modelInfo.isDefined) {
+        val x = modelInfo.get
+        val filename = if (format == "obj") {
+          dir + "models" + File.separator + x.id + ".obj"
+        } else if (format == "dae") {
+          dir + "COLLADA" + File.separator + x.id + ".dae"
+        } else null
+        if (filename != null && IOUtils.isReadableFileWithData(filename)) {
+          opts = Some(LoadOpts(Some(filename)))
+        }
+      }
+      opts
+    }
+
+    registerModelsDb(modelsDb)
+  }
 }
 
 object DataManager {

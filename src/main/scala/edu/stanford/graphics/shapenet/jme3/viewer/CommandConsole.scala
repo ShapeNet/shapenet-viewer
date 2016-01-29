@@ -338,6 +338,9 @@ class CommandConsole(val controller: ViewerController,
         case Array(_, "shapeNetCore", dir) => {
           viewer.dataManager.registerShapeNetCore(dir)
         }
+        case Array(_, "shapeNetSem", dir) => {
+          viewer.dataManager.registerShapeNetSem(dir)
+        }
         case _ => {
           console.output("Invalid parameters for " + name)
         }
