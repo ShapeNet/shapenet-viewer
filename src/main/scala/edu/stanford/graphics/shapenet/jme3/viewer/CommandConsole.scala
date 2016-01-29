@@ -3,8 +3,7 @@ package edu.stanford.graphics.shapenet.jme3.viewer
 import java.io.File
 
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.{CategoryUtils, FullId}
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
+import edu.stanford.graphics.shapenet.common.CategoryUtils
 import edu.stanford.graphics.shapenet.util.{ConfigHelper, IOUtils}
 import de.lessvoid.nifty.controls.{ConsoleCommands, Console}
 import de.lessvoid.nifty.controls.ConsoleCommands.ConsoleCommand

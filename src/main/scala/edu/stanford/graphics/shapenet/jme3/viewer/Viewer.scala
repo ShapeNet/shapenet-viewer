@@ -28,7 +28,7 @@ import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.gui.{MeshTreePanel, SceneTreePanel, TreeNodeInfo}
 import edu.stanford.graphics.shapenet.jme3.app.ModelInfoAppState
 import edu.stanford.graphics.shapenet.jme3.geom.BoundingBoxUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadFormat, LoadProgress, LoadProgressListener}
+import edu.stanford.graphics.shapenet.jme3.loaders.{LoadFormat, LoadProgress, LoadProgressListener}
 import edu.stanford.graphics.shapenet.jme3._
 import edu.stanford.graphics.shapenet.jme3.{Jme, JmeUtils}
 import edu.stanford.graphics.shapenet.util.ConversionUtils._
