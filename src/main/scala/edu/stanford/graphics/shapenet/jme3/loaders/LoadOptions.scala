@@ -10,6 +10,7 @@ import edu.stanford.graphics.shapenet.Constants
   */
 case class ModelLoadOptions(
                              format: String = null,
+                             path: Option[String] = None,
                              unit: Option[Double] = None,
                              up: Option[Vector3f] = None,
                              front: Option[Vector3f] = None,
@@ -132,12 +133,13 @@ object AssetGroups {
 }
 
 object LoadFormat extends Enumeration {
-  val OBJ_FORMAT, UTF8_FORMAT, KMZ_FORMAT = Value
+  val OBJ_FORMAT, UTF8_FORMAT, KMZ_FORMAT, DAE_FORMAT = Value
   def shortName(format: LoadFormat.Value): String = {
     format match {
       case OBJ_FORMAT => "obj"
       case UTF8_FORMAT => "utf8"
       case KMZ_FORMAT => "kmz"
+      case DAE_FORMAT => "dae"
     }
   }
   def apply(f: String): LoadFormat.Value = {
@@ -145,6 +147,7 @@ object LoadFormat extends Enumeration {
       case "obj" => OBJ_FORMAT
       case "utf8" => UTF8_FORMAT
       case "kmz" => KMZ_FORMAT
+      case "dae" => DAE_FORMAT
       case _ => withName(f)
     }
   }

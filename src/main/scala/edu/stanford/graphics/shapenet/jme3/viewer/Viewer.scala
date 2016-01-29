@@ -208,6 +208,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       x => config.loadFormat, s => {
         config.loadFormat = Some(LoadFormat(s))
         jme.defaultLoadFormat = config.loadFormat
+        jme.assetLoader.defaultLoadFormat = config.loadFormat
       })
   }
 

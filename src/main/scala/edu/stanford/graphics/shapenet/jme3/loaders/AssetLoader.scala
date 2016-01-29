@@ -20,7 +20,7 @@ class AssetLoader(val assetCreator: AssetCreator,
                   val dataManager: DataManager,
                   val defaultUseSupportHierarchy: Boolean = false,
                   val modelCacheSize: Option[Int] = None,
-                  val defaultLoadFormat: Option[LoadFormat.Value]) extends Loggable {
+                  var defaultLoadFormat: Option[LoadFormat.Value]) extends Loggable {
   val utf8Loader = new UTF8Loader(this)
   val modelCache = new SoftLRUCache[String,assetCreator.MODEL](modelCacheSize.getOrElse(16))
   private implicit val dm: DataManager = dataManager
@@ -38,13 +38,12 @@ class AssetLoader(val assetCreator: AssetCreator,
   def loadModel(modelId: String): assetCreator.MODEL = {
     val fullId = FullId(modelId)
     val loadFormat = defaultLoadFormat.map( x => LoadFormat.shortName(x)).getOrElse(null)
-    val options = AssetGroups.getModelLoadOptions(fullId.source, loadFormat)
-    val loadOpts = dataManager.getModelLoadOptions(fullId.fullid, options.format)
-    val loadPath = loadOpts.flatMap( x => x.path )
+    val loadOpts = dataManager.getModelLoadOptions(fullId, loadFormat)
+    val loadPath = loadOpts.path.getOrElse( loadOpts.modelIdToPath(fullId.id) )
     modelCache.getOrElse(fullId.fullid)({
-      val v = options.format match {
-        case "utf8" => utf8Loader.loadModel(fullId.fullid, loadPath.getOrElse(options.modelIdToPath(fullId.id)), options ).asInstanceOf[assetCreator.MODEL]
-        case _ => assetCreator.loadModel(fullId.fullid, loadPath.getOrElse(options.modelIdToPath(fullId.id)), options )
+      val v = loadOpts.format match {
+        case "utf8" => utf8Loader.loadModel(fullId.fullid, loadPath, loadOpts ).asInstanceOf[assetCreator.MODEL]
+        case _ => assetCreator.loadModel(fullId.fullid, loadPath, loadOpts )
       }
       if (dataManager != null && v != null) {
         v.modelInfo = dataManager.getModelInfo(fullId.fullid).getOrElse(null)
@@ -63,26 +62,21 @@ class AssetLoader(val assetCreator: AssetCreator,
       loadScene3DListener = new PartLoadProgressListener[assetCreator.SCENE, assetCreator.SCENE](progress, listener, 0)
     }
     val fullId = FullId(modelId)
-    val loadFormat = defaultLoadFormat.map( x => LoadFormat.shortName(x)).getOrElse(null)
-    val options = AssetGroups.getModelLoadOptions(fullId.source, loadFormat)
-    val loadOpts = dataManager.getModelLoadOptions(fullId.fullid, options.format)
-    val fullIdStr = FullId(modelId).fullid
+    val fullIdStr = fullId.fullid
     val mi = new SceneObject(0, fullIdStr, transform = transform)
     val modelInfo = dataManager.getModelInfo(fullIdStr).getOrElse(null)
+    val loadFormat = defaultLoadFormat.map( x => LoadFormat.shortName(x)).getOrElse(null)
+    val loadOpts = dataManager.getModelLoadOptions(fullId, loadFormat)
     val scene = Scene(IndexedSeq(mi))
     if (modelInfo != null) {
-      scene.front = loadOpts.flatMap( x => x.front ).getOrElse(modelInfo.front)
-      scene.up = loadOpts.flatMap( x => x.up ).getOrElse(modelInfo.up)
-      scene.unit = loadOpts.flatMap( x => x.unit ).getOrElse(modelInfo.unit)
+      scene.front = loadOpts.front.getOrElse( modelInfo.front )
+      scene.up = loadOpts.up.getOrElse( modelInfo.up )
+      scene.unit = loadOpts.unit.getOrElse( modelInfo.unit )
       scene.sceneId = if (modelInfo.fullId != null) modelInfo.fullId else modelId
       scene.sceneName = modelInfo.name
       scene.category = modelInfo.category
     } else {
       scene.sceneId = modelId
-    }
-    if (FullId(modelId).source == "yobi3d") {
-      scene.up = Vector3f.UNIT_Y
-      scene.front = Vector3f.UNIT_X
     }
     val res = loadScene(scene,false,loadScene3DListener)
     if (listener != null) {

@@ -99,7 +99,7 @@ class CommandConsole(val controller: ViewerController,
           }
         }
       } catch {
-        case ex:Exception => {
+        case ex:Throwable => {
           // TODO: Rework error recovery - capture load errors where they happen and propagate
           val argsStr = "'" + args.mkString(" ") + "'"
           console.output("Error invoking command " + argsStr)
@@ -422,7 +422,7 @@ class CommandConsole(val controller: ViewerController,
       try {
         executeImpl(args)
       } catch {
-        case ex: Exception => {
+        case ex: Throwable => {
           console.output("Error executing " + args.mkString(" "))
           ex.printStackTrace()
         }
