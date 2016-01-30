@@ -28,7 +28,7 @@ import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.gui.{MeshTreePanel, SceneTreePanel, TreeNodeInfo}
 import edu.stanford.graphics.shapenet.jme3.app.ModelInfoAppState
 import edu.stanford.graphics.shapenet.jme3.geom.BoundingBoxUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadFormat, LoadProgress, LoadProgressListener}
+import edu.stanford.graphics.shapenet.jme3.loaders.{LoadFormat, LoadProgress, LoadProgressListener}
 import edu.stanford.graphics.shapenet.jme3._
 import edu.stanford.graphics.shapenet.jme3.{Jme, JmeUtils}
 import edu.stanford.graphics.shapenet.util.ConversionUtils._
@@ -208,6 +208,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       x => config.loadFormat, s => {
         config.loadFormat = Some(LoadFormat(s))
         jme.defaultLoadFormat = config.loadFormat
+        jme.assetLoader.defaultLoadFormat = config.loadFormat
       })
   }
 
@@ -860,7 +861,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     }
   }
 
-  def saveModelScreenshots(modelIds: Iterable[String], outputDir: Option[String] = null) {
+  def saveModelScreenshots(modelIds: Iterable[String], outputDir: Option[String] = None) {
     def getOuputDirFn(fullId: FullId): String = {
       fullId.source match {
         case "3dw" => {

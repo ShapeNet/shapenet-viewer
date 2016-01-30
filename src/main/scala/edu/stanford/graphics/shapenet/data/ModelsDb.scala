@@ -1,16 +1,18 @@
 package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
-import edu.stanford.graphics.shapenet.common._
-import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 import edu.stanford.graphics.shapenet.Constants
+import edu.stanford.graphics.shapenet.common._
+import edu.stanford.graphics.shapenet.jme3.loaders.{AssetGroups, ModelLoadOptions}
+import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
 
 import scala.util.Random
 import scala.util.matching.Regex
 
 /**
  *  Database of 3D models
- *  @author Angel Chang
+  *
+  *  @author Angel Chang
  */
 trait ModelsDb {
   val name: String
@@ -67,29 +69,44 @@ trait ModelsDb {
     }
   }
 
-  // Let the asset loader figure this out (maybe logic should be moved here)
-  var getModelLoadOptions: (String,String) => Option[LoadOpts] = (fullId:String, format:String) => None
-}
+  def getModelLoadOptions(fullId:FullId, format:String): ModelLoadOptions = {
+    val modelInfo = getModelInfo(fullId.fullid)
+    var x = AssetGroups.getModelLoadOptions(fullId.source, format)
+    if (modelInfo.isDefined) {
+      x = x.copy( unit = Some(modelInfo.get.unit),
+                  up = if (modelInfo.get.up != null) Some(modelInfo.get.up) else x.up,
+                  front = if (modelInfo.get.front != null) Some(modelInfo.get.front) else x.front )
+    }
+    x
+  }
 
-case class LoadOpts(path: Option[String] = None,
-                    unit: Option[Double] = None,
-                    up: Option[Vector3f] = None,
-                    front: Option[Vector3f] = None,
-                    format: Option[String] = None)
+  def getDefaultModelInfo(fullId:FullId, format:String = null): DefaultModelInfo = {
+    AssetGroups.getDefaultModelInfo(fullId.source)
+  }
+}
 
 class CombinedModelsDb(override val name: String,
                        val defaultModelInfo: DefaultModelInfo = DefaultModelInfo()) extends ModelsDb with Loggable {
   lazy val modelsDbsByName = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
-  getModelLoadOptions = (fullId:String,format:String) => {
+  override def getModelLoadOptions(fullId:FullId, format:String) = {
     import scala.util.control.Breaks._
-    var opts: Option[LoadOpts] = None
+    var opts: ModelLoadOptions = null
     breakable {
       for (db <- modelsDbs) {
-        opts = db.getModelLoadOptions(fullId, format)
-        if (opts.nonEmpty) break
+        val dbOpts = db.getModelLoadOptions(fullId, format)
+        if (dbOpts != null) {
+          if (opts == null || (dbOpts.format != opts.format && dbOpts.format == format)
+            || (dbOpts.format == opts.format && dbOpts.path.isDefined && opts.path.isEmpty)) {
+            // this one is better
+            opts = dbOpts
+          }
+        }
       }
+    }
+    if (opts == null) {
+      opts = super.getModelLoadOptions(fullId, format)
     }
     opts
   }
@@ -215,14 +232,17 @@ class ModelsDbWithCsv(name: String, modelsFile: String, defaultModelInfo: Defaul
       includesHeader = true,
       escape = '\\')
       //headerFieldLength = collection.immutable.HashMap("minPoint" -> 3, "maxPoint" -> 3))
-    val defaultsForWssRoom = defaultModelInfo.copy(unit = Constants.WSS_SCENE_SCALE)
     val map = csvFile.toMap(
       row =>  {
         val modelId = csvFile.field(row, "fullId")
+        val fullId = FullId(modelId)
+        // NOTE: Default for model has good default unit,up,front, but not categories
+        val defaultsForModel = getDefaultModelInfo(fullId)
         val minPoint = toVector3f(csvFile.field(row, "minPoint"))
         val maxPoint = toVector3f(csvFile.field(row, "maxPoint"))
         val up = toVector3f(csvFile.field(row, "up"))
         val front = toVector3f(csvFile.field(row, "front"))
+        // defaultModelInfo has default categories
         val csvCategories = csvFile.splitField(row, "category", ",").map( x => x.intern() ) ++ defaultModelInfo.categories
         val allCategories = if (categoryTaxonomy != null && csvCategories.nonEmpty) {
           // Augment model categories with super classes and order categories from fine to least fine
@@ -239,8 +259,8 @@ class ModelsDbWithCsv(name: String, modelsFile: String, defaultModelInfo: Defaul
         }
         // Fix hacking unit for rooms... store in DB
         val defaults = if (isRoom && modelId.startsWith("wss."))
-          defaultsForWssRoom
-        else defaultModelInfo
+          defaultsForModel.copy( unit = Constants.WSS_SCENE_SCALE )
+        else defaultsForModel
 
         val unit = toDoubleOption(csvFile.field(row,"unit"))
 

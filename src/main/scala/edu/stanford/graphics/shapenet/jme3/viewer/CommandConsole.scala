@@ -3,8 +3,7 @@ package edu.stanford.graphics.shapenet.jme3.viewer
 import java.io.File
 
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.{CategoryUtils, FullId}
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
+import edu.stanford.graphics.shapenet.common.CategoryUtils
 import edu.stanford.graphics.shapenet.util.{ConfigHelper, IOUtils}
 import de.lessvoid.nifty.controls.{ConsoleCommands, Console}
 import de.lessvoid.nifty.controls.ConsoleCommands.ConsoleCommand
@@ -100,7 +99,7 @@ class CommandConsole(val controller: ViewerController,
           }
         }
       } catch {
-        case ex:Exception => {
+        case ex:Throwable => {
           // TODO: Rework error recovery - capture load errors where they happen and propagate
           val argsStr = "'" + args.mkString(" ") + "'"
           console.output("Error invoking command " + argsStr)
@@ -338,6 +337,9 @@ class CommandConsole(val controller: ViewerController,
         case Array(_, "shapeNetCore", dir) => {
           viewer.dataManager.registerShapeNetCore(dir)
         }
+        case Array(_, "shapeNetSem", dir) => {
+          viewer.dataManager.registerShapeNetSem(dir)
+        }
         case _ => {
           console.output("Invalid parameters for " + name)
         }
@@ -420,7 +422,7 @@ class CommandConsole(val controller: ViewerController,
       try {
         executeImpl(args)
       } catch {
-        case ex: Exception => {
+        case ex: Throwable => {
           console.output("Error executing " + args.mkString(" "))
           ex.printStackTrace()
         }

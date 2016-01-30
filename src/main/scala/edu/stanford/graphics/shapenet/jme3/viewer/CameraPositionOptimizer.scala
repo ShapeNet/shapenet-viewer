@@ -508,8 +508,6 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
     val centroid = bb.getCenter
 
     val dims = BoundingBoxUtils.getBBDims(bb)
-    val min = bb.getMin(null)
-    val max = bb.getMax(null)
     val maxDim = Seq(dims.x, dims.y, dims.z).max
     setCameraFrustum(camera, defaultFov, maxDim/200.0f, maxDim*5.0f)
 
@@ -517,12 +515,11 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
     // phi is rotation from front
     def positionToView(name: String, dists: Vector3f, theta: Float, phi: Float): CameraState = {
       val ry = dims.y/2.0f + dists.y
-      val rz = (dims.x/2.0f + dists.z)*math.cos(phi)*(-1)
+      val rz = (dims.z/2.0f + dists.z)*math.cos(phi)*(-1)
       val rx = (dims.x/2.0f + dists.x)*math.sin(phi)
       val camX = centroid.x + (rx*math.cos(theta)).toFloat
       val camY = centroid.y + (ry*math.sin(theta)).toFloat
       val camZ = centroid.z + (rz*math.cos(theta)).toFloat
-      val target = centroid
       CameraState(name, new Vector3f(camX, camY, camZ), worldUp, target = centroid )
     }
 

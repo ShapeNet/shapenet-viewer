@@ -2,8 +2,8 @@ package edu.stanford.graphics.shapenet.jme3.viewer
 
 import com.typesafe.config.{ConfigFactory, Config}
 import scala.collection.JavaConversions._
-import edu.stanford.graphics.shapenet.util.{ConfigManager, MutableConfigHelper, ConfigHelper}
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
+import edu.stanford.graphics.shapenet.util.ConfigManager
+import edu.stanford.graphics.shapenet.jme3.loaders.LoadFormat
 
 /**
  * Configuration for the viewer

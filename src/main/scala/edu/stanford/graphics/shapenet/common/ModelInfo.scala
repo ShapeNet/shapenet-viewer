@@ -1,6 +1,7 @@
 package edu.stanford.graphics.shapenet.common
 
 import com.jme3.math.Vector3f
+import edu.stanford.graphics.shapenet.jme3.loaders.AssetGroups
 import edu.stanford.graphics.shapenet.{SizeBy, Constants}
 import edu.stanford.graphics.shapenet.util.StringUtils
 
@@ -13,7 +14,8 @@ case class DefaultModelInfo(unit: Double = Constants.DEFAULT_MODEL_UNIT,
 
 /**
  * ModelInfo
- * @author Angel Chang
+  *
+  * @author Angel Chang
  */
 class ModelInfo(
                  val fullId: String = null,
@@ -29,7 +31,7 @@ class ModelInfo(
                  val unit0: Option[Double] = None,
                  val up0: Option[Vector3f] = None,
                  val front0: Option[Vector3f] = None,
-                 val defaults: DefaultModelInfo = DefaultModelInfo()
+                 val defaults: DefaultModelInfo// = DefaultModelInfo()
                  ) {
   var unit = unit0.getOrElse(defaults.unit)
   var up = up0.getOrElse(defaults.up)
