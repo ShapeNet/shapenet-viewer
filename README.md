@@ -72,6 +72,12 @@ ShapeNetSem
 You can also register a local copy of ShapeNetSem by specifying the path to the root directory containing all downloaded and extracted ShapeNetSem files:
 
       register shapeNetSem <path>
+
+The directory structure of ShapeNetSem should look something like this:
+
+     <ShapeNetSem.v0>/COLLADA/...
+                     /models/...
+                     /textures/...
       
 You can display ShapeNetSem models using the `wss` prefix.
 
