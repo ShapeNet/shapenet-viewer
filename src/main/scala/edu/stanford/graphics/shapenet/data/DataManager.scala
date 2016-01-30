@@ -16,7 +16,9 @@ class DataManager extends CombinedModelsDb("DataManager") {
 
   /* Model dbs */
   private def getModelInfoFromSolr(modelId: String): Option[ModelInfo] = {
-    solrQuerier.getModelInfo(modelId, defaultModelInfo)
+    val fullId = FullId(modelId)
+    val defaultsForModel = getDefaultModelInfo(fullId)
+    solrQuerier.getModelInfo(modelId, defaultsForModel)
   }
   override def getModelInfo(modelId: String): Option[ModelInfo] = {
     val modelInfo = super.getModelInfo(modelId)
@@ -70,16 +72,20 @@ class DataManager extends CombinedModelsDb("DataManager") {
       // customized load path
       override def getModelLoadOptions(fullId: FullId, format: String) = {
         val modelInfo = getModelInfo(fullId.fullid)
-        var opts = AssetGroups.getModelLoadOptions(fullId.source, format)
+        var opts = super.getModelLoadOptions(fullId, format)
         if (modelInfo.isDefined) {
           val x = modelInfo.get
-          val filename = if (format == "obj") {
-            dir + "models" + File.separator + x.id + ".obj"
-          } else if (format == "dae" || format == "kmz") {
-            dir + "COLLADA" + File.separator + x.id + ".dae"
-          } else null
+          var texturePath: String = null
+          var filename: String = null
+          if (format == "dae" || format == "kmz") {
+            filename = dir + "COLLADA" + File.separator + x.id + ".dae"
+          } else if (format != "utf8") {
+            texturePath = dir + "textures" + File.separator
+            filename = dir + "models" + File.separator + x.id + ".obj"
+          }
           if (filename != null && IOUtils.isReadableFileWithData(filename)) {
-            opts = opts.copy(path = Some(filename))
+            opts = opts.copy(path = Some(filename),
+              materialsPath = if (texturePath != null) Some(texturePath) else opts.materialsPath)
           }
         }
         opts

@@ -1,10 +1,10 @@
 package edu.stanford.graphics.shapenet.data
 
 import com.jme3.math.Vector3f
+import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.jme3.loaders.{AssetGroups, ModelLoadOptions}
 import edu.stanford.graphics.shapenet.util.{BatchSampler, CSVFile, Loggable, IOUtils}
-import edu.stanford.graphics.shapenet.Constants
 
 import scala.util.Random
 import scala.util.matching.Regex
@@ -78,6 +78,10 @@ trait ModelsDb {
                   front = if (modelInfo.get.front != null) Some(modelInfo.get.front) else x.front )
     }
     x
+  }
+
+  def getDefaultModelInfo(fullId:FullId, format:String = null): DefaultModelInfo = {
+    AssetGroups.getDefaultModelInfo(fullId.source)
   }
 }
 
@@ -228,14 +232,17 @@ class ModelsDbWithCsv(name: String, modelsFile: String, defaultModelInfo: Defaul
       includesHeader = true,
       escape = '\\')
       //headerFieldLength = collection.immutable.HashMap("minPoint" -> 3, "maxPoint" -> 3))
-    val defaultsForWssRoom = defaultModelInfo.copy(unit = Constants.WSS_SCENE_SCALE)
     val map = csvFile.toMap(
       row =>  {
         val modelId = csvFile.field(row, "fullId")
+        val fullId = FullId(modelId)
+        // NOTE: Default for model has good default unit,up,front, but not categories
+        val defaultsForModel = getDefaultModelInfo(fullId)
         val minPoint = toVector3f(csvFile.field(row, "minPoint"))
         val maxPoint = toVector3f(csvFile.field(row, "maxPoint"))
         val up = toVector3f(csvFile.field(row, "up"))
         val front = toVector3f(csvFile.field(row, "front"))
+        // defaultModelInfo has default categories
         val csvCategories = csvFile.splitField(row, "category", ",").map( x => x.intern() ) ++ defaultModelInfo.categories
         val allCategories = if (categoryTaxonomy != null && csvCategories.nonEmpty) {
           // Augment model categories with super classes and order categories from fine to least fine
@@ -252,8 +259,8 @@ class ModelsDbWithCsv(name: String, modelsFile: String, defaultModelInfo: Defaul
         }
         // Fix hacking unit for rooms... store in DB
         val defaults = if (isRoom && modelId.startsWith("wss."))
-          defaultsForWssRoom
-        else defaultModelInfo
+          defaultsForModel.copy( unit = Constants.WSS_SCENE_SCALE )
+        else defaultsForModel
 
         val unit = toDoubleOption(csvFile.field(row,"unit"))
 

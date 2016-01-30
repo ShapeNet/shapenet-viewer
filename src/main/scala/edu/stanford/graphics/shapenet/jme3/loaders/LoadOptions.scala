@@ -2,6 +2,7 @@ package edu.stanford.graphics.shapenet.jme3.loaders
 
 import com.jme3.math.Vector3f
 import edu.stanford.graphics.shapenet.Constants
+import edu.stanford.graphics.shapenet.common.DefaultModelInfo
 
 /**
   * Load options
@@ -41,7 +42,8 @@ object AssetGroups {
   private val _wssObjDir: String = if (_useObjGz) Constants.WSS_OBJGZ_DIR else Constants.WSS_OBJ_DIR
   // Predefined model load options
   val defaultModelAssetGroups: Seq[ModelAssetGroup] = Seq(
-    ModelAssetGroup("3dw", "3dw", loadOptions = Seq(
+    ModelAssetGroup("3dw", "3dw", defaultUp = Vector3f.UNIT_Z, defaultFront = Vector3f.UNIT_Y.negate(),
+      loadOptions = Seq(
         ModelLoadOptions(
           format = "kmz",
           //doubleSided = true,
@@ -55,59 +57,62 @@ object AssetGroups {
         }
       ))
     ),
-    ModelAssetGroup("wss", "wss", loadOptions = Seq(
-      ModelLoadOptions(
-        format = "obj",
-        normalizeRGB = false,
-        ignoreZeroRGBs = true,
-        invertTransparency = true,
-        defaultColor = Array(0.0, 0.0, 0.0),
-        // Because the mtl and obj are not stored in the same directory,
-        // we need to have the asset locator look hard for where the mtl/obj files are
-        // (this incurs overhead of 404 errors with default jme asset loader)
-        // work around by hacking around and specifying the materialsPath...
-        geometryPath = Option(_wssObjDir),
-        materialsPath = Option(Constants.WSS_TEXTURE_DIR),
-        compressionExt = if (_useObjGz) "gz" else null,
-        modelIdToPath = (id: String) => _wssObjDir + "/" + id + ".obj"
-      ),
-      ModelLoadOptions(
-        format = "utf8",
-        geometryPath = Option(Seq(Constants.WSS_DATA_DIR, "geometry").mkString("/")),
-        materialsPath = Option(Seq(Constants.WSS_DATA_DIR, "texture").mkString("/")),
-        normalizeRGB = false,
-        ignoreZeroRGBs = true,
-        invertTransparency = true,
-        defaultColor = Array(0.0, 0.0, 0.0),
-        modelIdToPath = (id: String) => Seq(Constants.WSS_DATA_DIR, "model",id + ".json").mkString("/")
-      ))
+    ModelAssetGroup("wss", "wss", defaultUp = Vector3f.UNIT_Z, defaultFront = Vector3f.UNIT_Y.negate(),
+      loadOptions = Seq(
+        ModelLoadOptions(
+          format = "obj",
+          normalizeRGB = false,
+          ignoreZeroRGBs = true,
+          invertTransparency = true,
+          defaultColor = Array(0.0, 0.0, 0.0),
+          // Because the mtl and obj are not stored in the same directory,
+          // we need to have the asset locator look hard for where the mtl/obj files are
+          // (this incurs overhead of 404 errors with default jme asset loader)
+          // work around by hacking around and specifying the materialsPath...
+          geometryPath = Option(_wssObjDir),
+          materialsPath = Option(Constants.WSS_TEXTURE_DIR),
+          compressionExt = if (_useObjGz) "gz" else null,
+          modelIdToPath = (id: String) => _wssObjDir + "/" + id + ".obj"
+        ),
+        ModelLoadOptions(
+          format = "utf8",
+          geometryPath = Option(Seq(Constants.WSS_DATA_DIR, "geometry").mkString("/")),
+          materialsPath = Option(Seq(Constants.WSS_DATA_DIR, "texture").mkString("/")),
+          normalizeRGB = false,
+          ignoreZeroRGBs = true,
+          invertTransparency = true,
+          defaultColor = Array(0.0, 0.0, 0.0),
+          modelIdToPath = (id: String) => Seq(Constants.WSS_DATA_DIR, "model",id + ".json").mkString("/")
+        ))
     ),
-    ModelAssetGroup("archive3d", "archive3d", loadOptions = Seq(
-      ModelLoadOptions(
-        format = "obj",
-        doubleSided = true,
-        modelIdToPath = (id: String) => Seq(Constants.ARCHIVE3D_DATA_DIR, "models",id, id + ".obj").mkString("/")
-      ),
-      new ModelLoadOptions(
-        format = "utf8",
-        doubleSided = true,
-        ignoreZeroRGBs = true,
-        defaultColor = Array(0.0, 0.0, 0.0),
-        modelIdToPath = (id: String) => Seq(Constants.ARCHIVE3D_DATA_DIR, "models",id, id + ".json").mkString("/")
-      ))
+    ModelAssetGroup("archive3d", "archive3d", defaultUp = Vector3f.UNIT_Z, defaultFront = Vector3f.UNIT_Y.negate(),
+      loadOptions = Seq(
+        ModelLoadOptions(
+          format = "obj",
+          doubleSided = true,
+          modelIdToPath = (id: String) => Seq(Constants.ARCHIVE3D_DATA_DIR, "models",id, id + ".obj").mkString("/")
+        ),
+        new ModelLoadOptions(
+          format = "utf8",
+          doubleSided = true,
+          ignoreZeroRGBs = true,
+          defaultColor = Array(0.0, 0.0, 0.0),
+          modelIdToPath = (id: String) => Seq(Constants.ARCHIVE3D_DATA_DIR, "models",id, id + ".json").mkString("/")
+        ))
     ),
-    ModelAssetGroup("vf", "vf", loadOptions = Seq(
-      new ModelLoadOptions(
-        format = "ply",
-        doubleSided = true,
-        modelIdToPath = (id: String) => Seq(Constants.VF_DATA_DIR, id + "d.ply").mkString("/")
-      ),
-      new ModelLoadOptions(
-        format = "utf8",
-        doubleSided = true,
-        defaultColor = Array(0.0, 0.0, 0.0),
-        modelIdToPath = (id: String) => Seq(Constants.VF_DATA_DIR, id + ".json").mkString("/")
-      ))
+    ModelAssetGroup("vf", "vf", defaultUp = Vector3f.UNIT_Z, defaultFront = Vector3f.UNIT_Y.negate(),
+      loadOptions = Seq(
+        new ModelLoadOptions(
+          format = "ply",
+          doubleSided = true,
+          modelIdToPath = (id: String) => Seq(Constants.VF_DATA_DIR, id + "d.ply").mkString("/")
+        ),
+        new ModelLoadOptions(
+          format = "utf8",
+          doubleSided = true,
+          defaultColor = Array(0.0, 0.0, 0.0),
+          modelIdToPath = (id: String) => Seq(Constants.VF_DATA_DIR, id + ".json").mkString("/")
+        ))
     ),
     ModelAssetGroup("yobi3d", "yobi3d", defaultUp = Vector3f.UNIT_Y, defaultFront = Vector3f.UNIT_X,
       loadOptions = Seq(
@@ -128,6 +133,19 @@ object AssetGroups {
   def getModelLoadOptions(source: String, defaultFormat: String = null): ModelLoadOptions = {
     defaultModelAssetGroupsMap.get(source).map( x =>
       x.loadOptionsByFormat.getOrElse(defaultFormat, x.loadOptions.head)).getOrElse(null)
+  }
+
+  def getDefaultModelInfo(source: String, defaultFormat: String = null): DefaultModelInfo = {
+    val modelLoadOptions = getModelLoadOptions(source, defaultFormat)
+    val assetGroupDefaults = defaultModelAssetGroupsMap.get(source)
+    DefaultModelInfo(
+      unit = modelLoadOptions.unit.getOrElse(
+        assetGroupDefaults.map( x => x.defaultUnit ).getOrElse( Constants.DEFAULT_MODEL_UNIT )),
+      up = modelLoadOptions.up.getOrElse(
+        assetGroupDefaults.map( x => x.defaultUp ).getOrElse( Constants.DEFAULT_MODEL_UP )),
+      front = modelLoadOptions.front.getOrElse(
+        assetGroupDefaults.map( x => x.defaultFront ).getOrElse( Constants.DEFAULT_MODEL_FRONT ))
+    )
   }
 
 }
