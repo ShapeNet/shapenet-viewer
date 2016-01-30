@@ -256,7 +256,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         dlsr = new DirectionalLightShadowRenderer(assetManager, shadowMapSize, 3)
         //dlsr.setLight(l)
         dlsr.setLambda(0.55f)
-        dlsr.setShadowIntensity(0.35f)
+        dlsr.setShadowIntensity(0.35f)  // How dark a shadow
         dlsr.setEdgeFilteringMode(EdgeFilteringMode.Bilinear)
         //dlsr.displayFrustum()
         viewPort.addProcessor(dlsr)
@@ -266,7 +266,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         dlsf = new DirectionalLightShadowFilter(assetManager, shadowMapSize, 3)
         //dlsf.setLight(l)
         dlsf.setLambda(0.55f)
-        dlsf.setShadowIntensity(0.35f)
+        dlsf.setShadowIntensity(0.35f)  // How dark a shadow
         dlsf.setEdgeFilteringMode(EdgeFilteringMode.Bilinear)
       }
       dlsf.setEnabled(true)
@@ -297,6 +297,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     _configFilter(outlineFilter, config.useOutline)
   }
   private def _configFilter(filter: =>Filter, enable: Boolean): Unit = {
+    filter.setEnabled(enable)
     if (enable) {
       if (fpp == null) {
         fpp = new FilterPostProcessor(assetManager)
