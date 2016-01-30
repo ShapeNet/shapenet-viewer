@@ -35,7 +35,7 @@ class DataManager extends CombinedModelsDb("DataManager") {
         // customized load path
         val modelInfo = getModelInfo(fullId.fullid)
         var opts = super.getModelLoadOptions(fullId, format)
-        logger.info("Format is " + format)
+        //logger.info("Format is " + format)
         if (modelInfo.isDefined && modelInfo.get.category.nonEmpty && format != "kmz" && format != "dae") {
           val x = modelInfo.get
           val filename = dir + x.category.head + File.separator + x.id + File.separator + "model.obj"
