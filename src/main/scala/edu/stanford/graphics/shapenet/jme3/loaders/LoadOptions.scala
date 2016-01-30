@@ -137,15 +137,19 @@ object AssetGroups {
 
   def getDefaultModelInfo(source: String, defaultFormat: String = null): DefaultModelInfo = {
     val modelLoadOptions = getModelLoadOptions(source, defaultFormat)
-    val assetGroupDefaults = defaultModelAssetGroupsMap.get(source)
-    DefaultModelInfo(
-      unit = modelLoadOptions.unit.getOrElse(
-        assetGroupDefaults.map( x => x.defaultUnit ).getOrElse( Constants.DEFAULT_MODEL_UNIT )),
-      up = modelLoadOptions.up.getOrElse(
-        assetGroupDefaults.map( x => x.defaultUp ).getOrElse( Constants.DEFAULT_MODEL_UP )),
-      front = modelLoadOptions.front.getOrElse(
-        assetGroupDefaults.map( x => x.defaultFront ).getOrElse( Constants.DEFAULT_MODEL_FRONT ))
-    )
+    if (modelLoadOptions != null) {
+      val assetGroupDefaults = defaultModelAssetGroupsMap.get(source)
+      DefaultModelInfo(
+        unit = modelLoadOptions.unit.getOrElse(
+          assetGroupDefaults.map(x => x.defaultUnit).getOrElse(Constants.DEFAULT_MODEL_UNIT)),
+        up = modelLoadOptions.up.getOrElse(
+          assetGroupDefaults.map(x => x.defaultUp).getOrElse(Constants.DEFAULT_MODEL_UP)),
+        front = modelLoadOptions.front.getOrElse(
+          assetGroupDefaults.map(x => x.defaultFront).getOrElse(Constants.DEFAULT_MODEL_FRONT))
+      )
+    } else {
+      DefaultModelInfo()
+    }
   }
 
 }
