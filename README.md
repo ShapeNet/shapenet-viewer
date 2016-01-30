@@ -28,8 +28,16 @@ Before you use the viewer you must register a local copy of ShapeNetCore by spec
 After registering the path to your local ShapeNet, you can display models by running one of the following commands:
 
       load model <modelId>
+      load model 3dw.1a04e3eab45ca15dd86060f189eb133
       load model random
       load model random 3dw chair
+      
+Note that the bicycle synset comes from `yobi3d`, and to display a model from the bicycle synset you would do 
+
+      load model yobi3d.0Ap5HKn9y3
+      load model random yobi3d bicycle
+
+We do not currently have textures for the `yobi3d` models.      
       
 You can also load models directly from the file system or the web using
 
@@ -57,6 +65,18 @@ All screenshots are saved to `$WORK_DIR/screenshots/models` or `$WORK_DIR/screen
 The viewer caches loaded models in memory so if you modify a model and would like to reload it from disk, use the `clear cache` command.
 
 If you would like to switch to loading `KMZ` models from the ShapeNet web server to compare with the `OBJ+MTL` models, use the command `set loadFormat kmz` (and `set loadFormat obj` to revert to default local loading).  The ShapeNet website thumbnails were all rendered from the `KMZ` format models.
+
+ShapeNetSem
+===========
+
+You can also register a local copy of ShapeNetSem by specifying the path to the root directory containing all downloaded and extracted ShapeNetSem files:
+
+      register shapeNetSem <path>
+      
+You can display ShapeNetSem models using the `wss` prefix.
+
+      load model wss.1a4216ac5ffbf1e89c7ce4b816b39bd0
+      load model random wss chair
 
 Contact
 =======
