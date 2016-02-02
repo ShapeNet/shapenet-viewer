@@ -88,6 +88,7 @@ trait Constants {
   val WSS_DATA_DIR = SHAPENET_HOST + "/wss/data/"
   val VF_DATA_DIR = SHAPENET_HOST + "/vf/data/"
   val SHAPENET_DATA_DIR = SHAPENET_HOST + "/shapenet/data/"
+  val YOBI3D_DATA_DIR = SHAPENET_HOST + "/shapenet/data/"
   val WSS_OBJ_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/models/" else MISC_DATA_HOST + "/g3dw/models/"
   val WSS_OBJGZ_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/models/" else TEXT2SCENE_DIR  + "/models/repositories/g3dw/models/"
   val WSS_TEXTURE_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/textures/" else MISC_DATA_HOST + "/g3dw/textures/"
