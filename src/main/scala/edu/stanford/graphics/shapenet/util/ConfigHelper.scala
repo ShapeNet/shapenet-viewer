@@ -132,7 +132,7 @@ object ConfigHelper {
           config = config.withFallback(c)
         }
       }
-      config.withFallback(defaultConfig).resolve()
+      config.withFallback(defaultConfig).withFallback(ConfigFactory.systemProperties).resolve()
     }
     catch {
       // oops, something went wrong

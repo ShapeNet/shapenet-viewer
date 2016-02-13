@@ -3,11 +3,12 @@ package edu.stanford.graphics.shapenet.apps
 import au.com.bytecode.opencsv.CSVWriter
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
+import com.typesafe.config.ConfigFactory
 import edu.stanford.graphics.shapenet.Constants
 import edu.stanford.graphics.shapenet.common.CameraInfo
 import edu.stanford.graphics.shapenet.jme3.Jme
 import edu.stanford.graphics.shapenet.jme3.viewer._
-import edu.stanford.graphics.shapenet.util.{IOUtils, ConfigHelper}
+import edu.stanford.graphics.shapenet.util.{StringUtils, IOUtils, ConfigHelper}
 import edu.stanford.graphics.shapenet.util.ConversionUtils.l2Or
 
 /**
@@ -20,12 +21,13 @@ object GenerateViewpoints extends App {
   val config = ViewerConfig(configFile)
 
   val loadModel = true
-  val id = config.defaultModelId
-  val summaryFilename = Constants.WORK_DIR + "viewpoints.csv"
+  val id = ConfigHelper.getString("input", config.defaultModelId)(configFile)
+  val summaryFilename = ConfigHelper.getString("output", Constants.WORK_DIR + "viewpoints.tsv")(configFile)
+  val fovy = ConfigHelper.getDouble("fovy", 30.0)(configFile)
 
   // Setup camera generator
   var cam = new Camera(config.width.get, config.height.get)
-  cam.setFrustumPerspective(45.0F, cam.getWidth().toFloat / cam.getHeight().toFloat, 1.0F, 1000.0F)
+  cam.setFrustumPerspective(fovy.toFloat, cam.getWidth().toFloat / cam.getHeight().toFloat, 1.0F, 1000.0F)
   cam.setLocation(new Vector3f(0.0F, 0.0F, 10.0F))
   cam.lookAt(new Vector3f(0.0F, 0.0F, 0.0F), Vector3f.UNIT_Y)
 
@@ -56,7 +58,7 @@ object GenerateViewpoints extends App {
   println("Opening " + summaryFilename)
   val append = false
   val hasData = IOUtils.isReadableFileWithData(summaryFilename)
-  val summaryFile = new CSVWriter(IOUtils.filePrintWriter(summaryFilename, append))
+  val summaryFile = new CSVWriter(IOUtils.filePrintWriter(summaryFilename, append), '\t', CSVWriter.NO_QUOTE_CHARACTER)
   if (!append || !hasData) {
     // Only output header if empty
     summaryFile.writeNext(Array("scene","image","bbmin","bbmax","camera.position","camera.up","camera.target","camera.direction"))
@@ -68,7 +70,12 @@ object GenerateViewpoints extends App {
     val sceneCam = jme.transformCameraInfoFromWorldToScene(camInfo, scene.scene)
     val row = Array(scene.scene.sceneId, scene.scene.sceneId + "_" + i, bbmin, bbmax,
       sceneCam.position, sceneCam.up, sceneCam.target, sceneCam.direction)
-    summaryFile.writeNext(row.map( x => toString(x)))
+    summaryFile.writeNext(row.map( x => if (x.isInstanceOf[Vector3f]) {
+       val v = x.asInstanceOf[Vector3f]
+       v.x + "," + v.y + "," + v.z
+    }  else {
+       toString(x)
+    }))
   }
   summaryFile.close()
 }
