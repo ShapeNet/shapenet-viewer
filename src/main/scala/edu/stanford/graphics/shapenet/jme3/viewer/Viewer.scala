@@ -887,7 +887,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     val sceneImagesGen = new SceneImagesGenerator(this, randomize = config.randomizeModels, skipExisting = config.skipExisting, getOutputDirFn = getOuputDirFn)
     val cameraPositionGenerator = if (config.includeCanonicalViews) {
       // Create 6 canonical views + 8 views around at height xxx
-      val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this)
+      val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this.getCamera)
       val camPosGen2 = new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
       new CombinedCameraPositionGenerator(camPosGen1, camPosGen2)
     } else {
