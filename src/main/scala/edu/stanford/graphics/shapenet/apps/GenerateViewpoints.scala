@@ -4,9 +4,11 @@ import au.com.bytecode.opencsv.CSVWriter
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
 import edu.stanford.graphics.shapenet.Constants
+import edu.stanford.graphics.shapenet.common.CameraInfo
 import edu.stanford.graphics.shapenet.jme3.Jme
 import edu.stanford.graphics.shapenet.jme3.viewer._
 import edu.stanford.graphics.shapenet.util.{IOUtils, ConfigHelper}
+import edu.stanford.graphics.shapenet.util.ConversionUtils.l2Or
 
 /**
   * Program to generate viewpoints for looking at a object
@@ -15,8 +17,13 @@ import edu.stanford.graphics.shapenet.util.{IOUtils, ConfigHelper}
   */
 object GenerateViewpoints extends App {
   val configFile = ConfigHelper.fromOptions(args:_*)
-  // Run viewer
   val config = ViewerConfig(configFile)
+
+  val loadModel = true
+  val id = config.defaultModelId
+  val summaryFilename = Constants.WORK_DIR + "viewpoints.csv"
+
+  // Setup camera generator
   var cam = new Camera(config.width.get, config.height.get)
   cam.setFrustumPerspective(45.0F, cam.getWidth().toFloat / cam.getHeight().toFloat, 1.0F, 1000.0F)
   cam.setLocation(new Vector3f(0.0F, 0.0F, 10.0F))
@@ -40,13 +47,11 @@ object GenerateViewpoints extends App {
 
   // Load scene
   val jme = Jme()
-  val scene = jme.loadModel("3dw.5554c3a2107b7592684b7bc3f8a9aa55")
+  val scene = if (loadModel) jme.loadModelAsAlignedScene(id) else jme.loadAlignedScene(id)
   val cameraPositions = cameraPositionGenerator.generatePositions(scene.node)
   val scenebb = jme.getBoundingBox(scene.node)
   val bbmin = scenebb.getMin(null)
   val bbmax = scenebb.getMax(null)
-
-  val summaryFilename = Constants.WORK_DIR + "viewpoints.csv"
 
   println("Opening " + summaryFilename)
   val append = false
@@ -59,8 +64,10 @@ object GenerateViewpoints extends App {
 
   def toString[T >: Null](o:T) = if (o == null) "" else o.toString()
   for ((p,i) <- cameraPositions.zipWithIndex) {
-    val row = Array(scene.fullId, scene.fullId + "_" + i, bbmin, bbmax,
-      p.position, p.up, p.target, p.direction)
+    val camInfo = CameraInfo("cam", p.position, p.up, p.direction, p.target)
+    val sceneCam = jme.transformCameraInfoFromWorldToScene(camInfo, scene.scene)
+    val row = Array(scene.scene.sceneId, scene.scene.sceneId + "_" + i, bbmin, bbmax,
+      sceneCam.position, sceneCam.up, sceneCam.target, sceneCam.direction)
     summaryFile.writeNext(row.map( x => toString(x)))
   }
   summaryFile.close()
