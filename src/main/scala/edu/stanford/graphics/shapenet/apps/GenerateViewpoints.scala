@@ -78,7 +78,7 @@ object GenerateViewpoints extends App {
   for ((p,i) <- cameraPositions.zipWithIndex) {
     val camInfo = CameraInfo("cam", p.position, p.up, p.direction, p.target)
     val sceneCam = jme.transformCameraInfoFromWorldToScene(camInfo, scene.scene)
-    val row = Array(scene.scene.sceneId, scene.scene.sceneId + "_" + i, bbmin, bbmax,
+    val row = Array(scene.scene.sceneId, i, bbmin, bbmax,
       sceneCam.position, sceneCam.up, sceneCam.target, sceneCam.direction)
     summaryFile.writeNext(row.map( x => if (x.isInstanceOf[Vector3f]) {
        val v = x.asInstanceOf[Vector3f]
