@@ -91,17 +91,14 @@ class CombinedModelsDb(override val name: String,
   lazy val modelsDbsBySource = new scala.collection.mutable.HashMap[String, scala.collection.mutable.ArrayBuffer[ModelsDb]]()
   lazy val modelsDbs = new scala.collection.mutable.ArrayBuffer[ModelsDb]
   override def getModelLoadOptions(fullId:FullId, format:String) = {
-    import scala.util.control.Breaks._
     var opts: ModelLoadOptions = null
-    breakable {
-      for (db <- modelsDbs) {
-        val dbOpts = db.getModelLoadOptions(fullId, format)
-        if (dbOpts != null) {
-          if (opts == null || (dbOpts.format != opts.format && dbOpts.format == format)
-            || (dbOpts.format == opts.format && dbOpts.path.isDefined && opts.path.isEmpty)) {
-            // this one is better
-            opts = dbOpts
-          }
+    for (db <- modelsDbs) {
+      val dbOpts = db.getModelLoadOptions(fullId, format)
+      if (dbOpts != null) {
+        if (opts == null || (dbOpts.format != opts.format && dbOpts.format == format)
+          || (dbOpts.format == opts.format && dbOpts.path.isDefined && opts.path.isEmpty)) {
+          // this one is better
+          opts = dbOpts
         }
       }
     }
