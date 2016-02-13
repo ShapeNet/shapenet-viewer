@@ -13,6 +13,8 @@ import edu.stanford.graphics.shapenet.util.IOUtils
  */
 class DataManager extends CombinedModelsDb("DataManager") {
   lazy val solrQuerier = new SolrQuerier
+  val customModelInfos = new scala.collection.mutable.HashMap[String, ModelInfo]
+  val customLoadOpts = new scala.collection.mutable.HashMap[String, ModelLoadOptions]
 
   /* Model dbs */
   private def getModelInfoFromSolr(modelId: String): Option[ModelInfo] = {
@@ -21,9 +23,27 @@ class DataManager extends CombinedModelsDb("DataManager") {
     solrQuerier.getModelInfo(modelId, defaultsForModel)
   }
   override def getModelInfo(modelId: String): Option[ModelInfo] = {
-    val modelInfo = super.getModelInfo(modelId)
-    if (modelInfo.isDefined) modelInfo
-    else getModelInfoFromSolr(modelId)
+    var modelInfo = customModelInfos.get(modelId)
+    if (!modelInfo.isDefined) {
+      modelInfo = super.getModelInfo(modelId)
+    }
+    if (!modelInfo.isDefined) {
+      modelInfo = getModelInfoFromSolr(modelId)
+    }
+    modelInfo
+  }
+  override def getModelLoadOptions(fullId:FullId, format:String): ModelLoadOptions = {
+    val modelLoadOptions = customLoadOpts.getOrElse(fullId.fullid, super.getModelLoadOptions(fullId, format))
+    modelLoadOptions
+  }
+
+  def registerCustomModelInfo(id: String, m: ModelInfo): Unit = {
+    customModelInfos.put(id, m)
+  }
+
+  def registerCustomLoadOptions(id: String, m: ModelLoadOptions): Unit = {
+    val fullId = FullId(id)
+    customLoadOpts.put(fullId.fullid, m)
   }
 
   def registerShapeNetCore(dirpath: String): Unit = {

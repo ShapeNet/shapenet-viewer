@@ -3,12 +3,13 @@ package edu.stanford.graphics.shapenet.apps
 import au.com.bytecode.opencsv.CSVWriter
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
-import com.typesafe.config.ConfigFactory
 import edu.stanford.graphics.shapenet.Constants
-import edu.stanford.graphics.shapenet.common.CameraInfo
+import edu.stanford.graphics.shapenet.common.{FullId, CameraInfo}
 import edu.stanford.graphics.shapenet.jme3.Jme
+import edu.stanford.graphics.shapenet.jme3.loaders.ModelLoadOptions
+import edu.stanford.graphics.shapenet.jme3.stringToVector3f
 import edu.stanford.graphics.shapenet.jme3.viewer._
-import edu.stanford.graphics.shapenet.util.{StringUtils, IOUtils, ConfigHelper}
+import edu.stanford.graphics.shapenet.util.{IOUtils, ConfigHelper}
 import edu.stanford.graphics.shapenet.util.ConversionUtils.l2Or
 
 /**
@@ -24,6 +25,9 @@ object GenerateViewpoints extends App {
   val id = ConfigHelper.getString("input", config.defaultModelId)(configFile)
   val summaryFilename = ConfigHelper.getString("output", Constants.WORK_DIR + "viewpoints.tsv")(configFile)
   val fovy = ConfigHelper.getDouble("fovy", 30.0)(configFile)
+  val up = ConfigHelper.getStringOption("up")(configFile).map( x => stringToVector3f(x) )
+  val front = ConfigHelper.getStringOption("front")(configFile).map( x => stringToVector3f(x) )
+  val unit = ConfigHelper.getDoubleOption("unit")(configFile)
 
   // Setup camera generator
   var cam = new Camera(config.width.get, config.height.get)
@@ -49,6 +53,12 @@ object GenerateViewpoints extends App {
 
   // Load scene
   val jme = Jme()
+  if (this.unit.isDefined || this.up.isDefined || this.front.isDefined) {
+    val fullId = FullId(id)
+    val loadOpts = jme.dataManager.getModelLoadOptions(fullId, null).copy(unit = this.unit, up = this.up, front = this.front)
+    jme.dataManager.registerCustomLoadOptions(id, loadOpts)
+  }
+
   val scene = if (loadModel) jme.loadModelAsAlignedScene(id) else jme.loadAlignedScene(id)
   val cameraPositions = cameraPositionGenerator.generatePositions(scene.node)
   val scenebb = jme.getBoundingBox(scene.node)
