@@ -93,6 +93,7 @@ class DebugVisualizer(viewer: Viewer) extends Loggable {
     for (modelInstance <- selected) {
       val coloredNode = jme.buildFalseColoredMeshes(modelInstance.node, falseColors)
       meshesNode.attachChild(coloredNode)
+      jme.setVisible(modelInstance.node, false)
       jme.setWireframeMode(modelInstance.node, setWireframe)
     }
     debugNode.attachChild(meshesNode)
