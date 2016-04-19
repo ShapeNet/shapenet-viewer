@@ -9,8 +9,7 @@ import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.colors._
 import edu.stanford.graphics.shapenet.jme3.asset.{MyUrlLocator, MyFileLocator}
 import edu.stanford.graphics.shapenet.jme3.geom.BoundingBoxUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadProgress, LoadProgressListener, LoadFormat}
+import edu.stanford.graphics.shapenet.jme3.loaders.{AssetLoader, LoadProgress, LoadProgressListener, LoadFormat}
 import edu.stanford.graphics.shapenet.jme3.viewer.{FalseColorGenerator, BasicCameraPositioner}
 import edu.stanford.graphics.shapenet.util.ConversionUtils._
 import edu.stanford.graphics.shapenet.util.Loggable

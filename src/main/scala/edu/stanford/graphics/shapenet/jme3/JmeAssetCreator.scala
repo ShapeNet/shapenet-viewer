@@ -1,21 +1,20 @@
 package edu.stanford.graphics.shapenet.jme3
 
-import edu.stanford.graphics.shapenet.{Constants, jme3, UserDataConstants}
+import edu.stanford.graphics.shapenet.{jme3, UserDataConstants}
 import edu.stanford.graphics.shapenet.common.{ModelInstance, GeometricScene, Model, MaterialInfo}
 import edu.stanford.graphics.shapenet.jme3.asset.{EnhancedModelKey, CompressedAssetKey}
-import edu.stanford.graphics.shapenet.jme3.loaders.{UTF8Decoder, AssetCreator, AssetLoader}
+import edu.stanford.graphics.shapenet.jme3.loaders.{ModelLoadOptions, UTF8Decoder, AssetCreator}
 import edu.stanford.graphics.shapenet.util.Loggable
 import com.jme3.asset.{ModelKey, AssetManager}
 import com.jme3.bounding.BoundingVolume
 import com.jme3.material.Material
 import com.jme3.material.RenderState.{FaceCullMode, BlendMode}
 import com.jme3.math.{Matrix4f, ColorRGBA, Transform}
-import com.jme3.renderer.queue.RenderQueue.{Bucket, ShadowMode}
+import com.jme3.renderer.queue.RenderQueue.Bucket
 import com.jme3.scene._
 import com.jme3.scene.Mesh.Mode
 import com.jme3.texture.Texture
 import com.jme3.texture.Texture.WrapMode
-import com.jme3.util.TangentBinormalGenerator
 import jme3tools.optimize.GeometryBatchFactory
 
 /**
@@ -114,11 +113,7 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
     scene
   }
 
-  override def finalizeModel(model: Model[Node], options: AssetLoader.LoadOptions = null) {
-    if (options.supportShadow) {
-      model.node.setShadowMode(ShadowMode.CastAndReceive)
-      TangentBinormalGenerator.generate(model.node)
-    }
+  override def finalizeModel(model: Model[Node], options: ModelLoadOptions = null) {
     if (optimize) {
       GeometryBatchFactory.optimize(model.node)
     }
@@ -129,7 +124,7 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
     scene.node.updateModelBound()
   }
 
-  def loadModel(name: String, inpath: String, options: AssetLoader.LoadOptions = null) = {
+  def loadModel(name: String, inpath: String, options: ModelLoadOptions = null) = {
     // Replace \ with / so JME ModelKey will have correct folder (JME AssetKey looks for char 47 '/' as folder separator)
     val path = inpath.replaceAll("\\\\", "/")
     logger.info("load model " + name + " from " + path)
@@ -166,7 +161,7 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
               material.setColor(param, defaultValue)
             }
           } catch {
-            case ex: Exception => logger.warn("Error setting default material " + param, ex)
+            case ex: Exception => logger.warn("Error setting default material " + param)
           }
         }
       }
@@ -178,7 +173,12 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
         if (options.invertTransparency)  {
           // TODO: anything to do here?
         }
-        setToDefaultIfNotSet(material, "Diffuse", defaultColor)
+
+        val vertexColorParam = material.getParam("VertexColor")
+        if (vertexColorParam == null || vertexColorParam.getValue.asInstanceOf[Boolean] == false) {
+          // Not vertex color, set diffuse
+          setToDefaultIfNotSet(material, "Diffuse", defaultColor)
+        }
         val diffuseColor = if (material.getParam("Diffuse") != null) {
           material.getParam("Diffuse").getValue.asInstanceOf[ColorRGBA]
         } else null
@@ -211,10 +211,6 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
       }
     }
     spatial.depthFirstTraversal(geomVisitor)
-    if (options.supportShadow) {
-      node.setShadowMode(ShadowMode.CastAndReceive)
-      //TangentBinormalGenerator.generate(node)
-    }
 
     val model = new Model[Node](node)
     model

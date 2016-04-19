@@ -2,8 +2,8 @@ package edu.stanford.graphics.shapenet.jme3.viewer
 
 import com.typesafe.config.{ConfigFactory, Config}
 import scala.collection.JavaConversions._
-import edu.stanford.graphics.shapenet.util.{ConfigManager, MutableConfigHelper, ConfigHelper}
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
+import edu.stanford.graphics.shapenet.util.ConfigManager
+import edu.stanford.graphics.shapenet.jme3.loaders.LoadFormat
 
 /**
  * Configuration for the viewer
@@ -18,10 +18,10 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val cacheWebFiles = getBoolean("viewer.cacheWebFiles", true)
 
   val modelCacheSize = getIntOption("viewer.modelCacheSize")
-  val offscreenMode = config.getBoolean("viewer.offscreen")
+  val offscreenMode = getBoolean("viewer.offscreen", false)
   //val commandsFile = config.getString("viewer.commands.file")
   //val commands = Seq("load random")
-  val commands = config.getStringList("viewer.commands").toIndexedSeq
+  val commands = getStringList("viewer.commands", Seq()).toIndexedSeq
 
   val userId = getString("viewer.userId", "shapenetViewer")
 
@@ -125,7 +125,6 @@ object ViewerConfig {
   // Stupid type-config - have to define defaults for everything....
   val defaults = ConfigFactory.parseMap(
     Map(
-      "viewer.offscreen" -> java.lang.Boolean.FALSE,
       "viewer.commands" -> new java.util.ArrayList[String]()
     )
   )

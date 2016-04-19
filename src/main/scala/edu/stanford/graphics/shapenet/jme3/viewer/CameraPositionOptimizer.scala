@@ -608,7 +608,7 @@ object CameraPositionGenerator {
   )
 
   def canonicalViews(distScale: Float) = new CanonicalViewsCameraPositionGenerator(distScale, 0, 0)
-  def canonicalViewsToFit(viewer: Viewer) = new CanonicalViewsCameraPositionGenerator(0.0f, viewer.getCamera.getWidth, viewer.getCamera.getHeight)
+  def canonicalViewsToFit(cam: Camera) = new CanonicalViewsCameraPositionGenerator(0.0f, cam.getWidth, cam.getHeight)
 
   def apply(viewer: Viewer,
             cameraPositionOptions: CameraPositionOptions = defaultCameraPositionOptions,
@@ -637,7 +637,7 @@ protected class CanonicalViewsCameraPositionGenerator(val distScale: Float, val 
   def nViews = 6
 }
 
-protected class BasicCameraPositionGenerator(val cameraOptimizer: CameraPositionOptimizer, val nPositions: Int, val useDebugPositions: Boolean) extends CameraPositionGenerator {
+class BasicCameraPositionGenerator(val cameraOptimizer: CameraPositionOptimizer, val nPositions: Int, val useDebugPositions: Boolean) extends CameraPositionGenerator {
   def generatePositions(targets: Spatial*): Seq[CameraState] = {
     if (useDebugPositions) {
       cameraOptimizer.generateDebugPositions(targets:_*).map( x => CameraState(x) )
@@ -648,7 +648,7 @@ protected class BasicCameraPositionGenerator(val cameraOptimizer: CameraPosition
   def nViews = if (useDebugPositions) 3 else nPositions
 }
 
-protected class RotatingCameraPositionGenerator(val camera: Camera, val cameraOptions: CameraPositionOptions, val nPositions: Int) extends CameraPositionGenerator {
+class RotatingCameraPositionGenerator(val camera: Camera, val cameraOptions: CameraPositionOptions, val nPositions: Int) extends CameraPositionGenerator {
   lazy val cameraPositioner = new BasicCameraPositioner()
 
   def generatePositions(targets: Spatial*): Seq[CameraState] = {
@@ -660,7 +660,7 @@ protected class RotatingCameraPositionGenerator(val camera: Camera, val cameraOp
   def nViews = nPositions
 }
 
-protected class CombinedCameraPositionGenerator(val generators: CameraPositionGenerator*) extends CameraPositionGenerator {
+class CombinedCameraPositionGenerator(val generators: CameraPositionGenerator*) extends CameraPositionGenerator {
   def generatePositions(targets: Spatial*): Seq[CameraState] = {
     (for (g <- generators) yield {
       g.generatePositions(targets:_*)

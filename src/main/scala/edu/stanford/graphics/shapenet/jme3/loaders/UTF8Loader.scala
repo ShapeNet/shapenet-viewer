@@ -21,12 +21,12 @@ class UTF8Loader(val assetLoader: AssetLoader)  {
   case class LazyMaterial (
     baseDir: String,
     params: Map[String,Object]
-  )(implicit options: AssetLoader.LoadOptions) {
+  )(implicit options: ModelLoadOptions) {
     lazy val material = assetLoader.loadMaterial(convertMaterialParams(params, baseDir))
   }
 
   def convertMaterialParams(params: Map[String,Object],
-                            baseDir: String)(implicit options: AssetLoader.LoadOptions): MaterialInfo = {
+                            baseDir: String)(implicit options: ModelLoadOptions): MaterialInfo = {
     def getPath(s: String) =
       if (s.startsWith("http:")) s else options.materialsPath.getOrElse(baseDir) + "/" + s
 
@@ -86,7 +86,7 @@ class UTF8Loader(val assetLoader: AssetLoader)  {
     res
   }
 
-  def loadModel(fullId: String, path: String, options: AssetLoader.LoadOptions = new AssetLoader.LoadOptions()): Model[_] =
+  def loadModel(fullId: String, path: String, options: ModelLoadOptions = new ModelLoadOptions()): Model[_] =
   {
     System.out.println("load json " + path)
     val base = IOUtils.getParentDir(path)

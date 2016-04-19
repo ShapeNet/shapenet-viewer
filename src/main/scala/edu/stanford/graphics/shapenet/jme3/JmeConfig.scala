@@ -2,7 +2,7 @@ package edu.stanford.graphics.shapenet.jme3
 
 import com.typesafe.config.{ConfigFactory, Config}
 import edu.stanford.graphics.shapenet.util.ConfigHelper
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.LoadFormat
+import edu.stanford.graphics.shapenet.jme3.loaders.LoadFormat
 import scala.collection.JavaConversions._
 
 /**

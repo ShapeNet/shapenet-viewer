@@ -28,7 +28,7 @@ import edu.stanford.graphics.shapenet.common._
 import edu.stanford.graphics.shapenet.gui.{MeshTreePanel, SceneTreePanel, TreeNodeInfo}
 import edu.stanford.graphics.shapenet.jme3.app.ModelInfoAppState
 import edu.stanford.graphics.shapenet.jme3.geom.BoundingBoxUtils
-import edu.stanford.graphics.shapenet.jme3.loaders.AssetLoader.{LoadFormat, LoadProgress, LoadProgressListener}
+import edu.stanford.graphics.shapenet.jme3.loaders.{LoadFormat, LoadProgress, LoadProgressListener}
 import edu.stanford.graphics.shapenet.jme3._
 import edu.stanford.graphics.shapenet.jme3.{Jme, JmeUtils}
 import edu.stanford.graphics.shapenet.util.ConversionUtils._
@@ -208,6 +208,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       x => config.loadFormat, s => {
         config.loadFormat = Some(LoadFormat(s))
         jme.defaultLoadFormat = config.loadFormat
+        jme.assetLoader.defaultLoadFormat = config.loadFormat
       })
   }
 
@@ -256,7 +257,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         dlsr = new DirectionalLightShadowRenderer(assetManager, shadowMapSize, 3)
         //dlsr.setLight(l)
         dlsr.setLambda(0.55f)
-        dlsr.setShadowIntensity(0.35f)
+        dlsr.setShadowIntensity(0.35f)  // How dark a shadow
         dlsr.setEdgeFilteringMode(EdgeFilteringMode.Bilinear)
         //dlsr.displayFrustum()
         viewPort.addProcessor(dlsr)
@@ -266,7 +267,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         dlsf = new DirectionalLightShadowFilter(assetManager, shadowMapSize, 3)
         //dlsf.setLight(l)
         dlsf.setLambda(0.55f)
-        dlsf.setShadowIntensity(0.35f)
+        dlsf.setShadowIntensity(0.35f)  // How dark a shadow
         dlsf.setEdgeFilteringMode(EdgeFilteringMode.Bilinear)
       }
       dlsf.setEnabled(true)
@@ -297,6 +298,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     _configFilter(outlineFilter, config.useOutline)
   }
   private def _configFilter(filter: =>Filter, enable: Boolean): Unit = {
+    filter.setEnabled(enable)
     if (enable) {
       if (fpp == null) {
         fpp = new FilterPostProcessor(assetManager)
@@ -885,7 +887,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     val sceneImagesGen = new SceneImagesGenerator(this, randomize = config.randomizeModels, skipExisting = config.skipExisting, getOutputDirFn = getOuputDirFn)
     val cameraPositionGenerator = if (config.includeCanonicalViews) {
       // Create 6 canonical views + 8 views around at height xxx
-      val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this)
+      val camPosGen1 = CameraPositionGenerator.canonicalViewsToFit(this.getCamera)
       val camPosGen2 = new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
       new CombinedCameraPositionGenerator(camPosGen1, camPosGen2)
     } else {
