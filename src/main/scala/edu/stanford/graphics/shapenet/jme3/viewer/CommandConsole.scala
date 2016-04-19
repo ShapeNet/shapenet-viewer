@@ -245,9 +245,11 @@ class CommandConsole(val controller: ViewerController,
       args match {
         // Show meshes
         case Array(_, "meshes") => {
-          viewer.debugVisualizer.showMeshes()
+          viewer.debugVisualizer.showMeshes(false)
         }
-        case Array(_, "mesh", "hierarchy") => {
+        case Array(_, "meshes", "withWireframe") => {
+          viewer.debugVisualizer.showMeshes(true)
+        }        case Array(_, "mesh", "hierarchy") => {
           viewer.showMeshTreePanel(viewer.scene.node)
         }
       }
