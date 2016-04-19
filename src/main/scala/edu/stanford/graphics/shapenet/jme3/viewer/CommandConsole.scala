@@ -234,11 +234,12 @@ class CommandConsole(val controller: ViewerController,
     override def description = "Show various things for the scene"
     override def aliases = Seq("s")
     override def registerArgs = _getArgs()
-    private def _getArgs(): Seq[String] = Seq("meshes", "mesh hierarchy")
+    private def _getArgs(): Seq[String] = Seq("meshes", "meshes withWireframe", "mesh hierarchy")
     override def extendedDescription =
       "show hierarchy - Show scene hierarchy\n" +
         "show mesh hierarchy - Show mesh hierarchy\n" +
-        "show meshes - Shows meshes of selected object"
+        "show meshes - Shows meshes of selected object" +
+        "show meshes withWireframe - Shows meshes of selected object with wireframe lines"
 
     override def executeImpl(args: Array[String]) {
       args match {
@@ -248,7 +249,8 @@ class CommandConsole(val controller: ViewerController,
         }
         case Array(_, "meshes", "withWireframe") => {
           viewer.debugVisualizer.showMeshes(true)
-        }        case Array(_, "mesh", "hierarchy") => {
+        }
+        case Array(_, "mesh", "hierarchy") => {
           viewer.showMeshTreePanel(viewer.scene.node)
         }
       }
