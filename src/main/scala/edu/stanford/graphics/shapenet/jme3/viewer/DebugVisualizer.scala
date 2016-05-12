@@ -84,7 +84,7 @@ class DebugVisualizer(viewer: Viewer) extends Loggable {
     }
   }
 
-  def showMeshes() {
+  def showMeshes(setWireframe: Boolean = false) {
     val falseColors = new FalseColorGenerator()
     val meshesNode = new Node()
     val selected =
@@ -93,7 +93,8 @@ class DebugVisualizer(viewer: Viewer) extends Loggable {
     for (modelInstance <- selected) {
       val coloredNode = jme.buildFalseColoredMeshes(modelInstance.node, falseColors)
       meshesNode.attachChild(coloredNode)
-      jme.setWireframeMode(modelInstance.node, true)
+      jme.setVisible(modelInstance.node, false)
+      jme.setWireframeMode(modelInstance.node, setWireframe)
     }
     debugNode.attachChild(meshesNode)
   }

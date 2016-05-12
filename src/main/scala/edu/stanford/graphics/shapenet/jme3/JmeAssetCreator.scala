@@ -161,7 +161,7 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
               material.setColor(param, defaultValue)
             }
           } catch {
-            case ex: Exception => logger.warn("Error setting default material " + param, ex)
+            case ex: Exception => logger.warn("Error setting default material " + param)
           }
         }
       }
@@ -173,7 +173,12 @@ class JmeAssetCreator(val assetManager: AssetManager, val nolights: Boolean = fa
         if (options.invertTransparency)  {
           // TODO: anything to do here?
         }
-        setToDefaultIfNotSet(material, "Diffuse", defaultColor)
+
+        val vertexColorParam = material.getParam("VertexColor")
+        if (vertexColorParam == null || vertexColorParam.getValue.asInstanceOf[Boolean] == false) {
+          // Not vertex color, set diffuse
+          setToDefaultIfNotSet(material, "Diffuse", defaultColor)
+        }
         val diffuseColor = if (material.getParam("Diffuse") != null) {
           material.getParam("Diffuse").getValue.asInstanceOf[ColorRGBA]
         } else null

@@ -76,6 +76,9 @@ class AssetLoader(val assetCreator: AssetCreator,
       scene.sceneName = modelInfo.name
       scene.category = modelInfo.category
     } else {
+      if (loadOpts.front.isDefined) scene.front = loadOpts.front.get
+      if (loadOpts.up.isDefined) scene.up = loadOpts.up.get
+      if (loadOpts.unit.isDefined) scene.unit = loadOpts.unit.get
       scene.sceneId = modelId
     }
     val res = loadScene(scene,false,loadScene3DListener)

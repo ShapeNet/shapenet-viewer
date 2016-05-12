@@ -18,10 +18,10 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val cacheWebFiles = getBoolean("viewer.cacheWebFiles", true)
 
   val modelCacheSize = getIntOption("viewer.modelCacheSize")
-  val offscreenMode = config.getBoolean("viewer.offscreen")
+  val offscreenMode = getBoolean("viewer.offscreen", false)
   //val commandsFile = config.getString("viewer.commands.file")
   //val commands = Seq("load random")
-  val commands = config.getStringList("viewer.commands").toIndexedSeq
+  val commands = getStringList("viewer.commands", Seq()).toIndexedSeq
 
   val userId = getString("viewer.userId", "shapenetViewer")
 
@@ -122,7 +122,6 @@ object ViewerConfig {
   // Stupid type-config - have to define defaults for everything....
   val defaults = ConfigFactory.parseMap(
     Map(
-      "viewer.offscreen" -> java.lang.Boolean.FALSE,
       "viewer.commands" -> new java.util.ArrayList[String]()
     )
   )
