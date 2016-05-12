@@ -59,7 +59,7 @@ All screenshots are saved to `$WORK_DIR/screenshots/models` or `$WORK_DIR/screen
 - `nImagesPerModel = 8` : how many equally-spaced turntable positions (increments of the camera azimuth angle) to render
 - `cameraAngleFromHorizontal = 30` : camera elevation in degrees from horizontal (ground) plane
 - `includeCanonicalViews = true` : whether to render top, bottom, left, right, front and back views in addition to turntable views
-- `cameraPositionStrategy = fit` : options are `distance` (set camera distance from closest object bounding box edge to be equal to `modelDistanceScale * maxModelDimension`) or `fit` (translate camera so that model fits within frame)
+- `cameraPositionStrategy = fit` : options are `distance` (set camera distance from closest object bounding box edge to be equal to `modelDistanceScale * maxModelDimension`) or `fit` (translate camera so that model fits within frame) or `distance_to_centroid` (set camera distance from object centroid to be equal to `modelDistanceScale * maxModelDimension`)
 - `addFloor = false` : whether a floor plane should be added below the model
 
 The viewer caches loaded models in memory so if you modify a model and would like to reload it from disk, use the `clear cache` command.

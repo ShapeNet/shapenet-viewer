@@ -40,7 +40,8 @@ class CameraPositionOptimizer(val viewer: Viewer,
    *  by maximizing the number of objects visible
    *  For now, keep camera distance and height
    * select only horizontal positioning
-   * @param nCameraPos - number of camera positions to try
+    *
+    * @param nCameraPos - number of camera positions to try
    */
   def optimize(nCameraPos: Int, targetNodes: Spatial*) {
     optimize(nCameraPos, listener = null, targetNodes:_*)
@@ -61,7 +62,8 @@ class CameraPositionOptimizer(val viewer: Viewer,
    *    (the camera is pushed forward if there are objects in the way)
    * 4. Select camera position based on the number of relevant objects
    *    (either target or child of target) visible
-   * @param nCameraPos Number of camera positions to consider
+    *
+    * @param nCameraPos Number of camera positions to consider
    * @param listener Callback for notifying when optimization is complete
    * @param targetNodes Target nodes to focus on
    */
@@ -332,7 +334,7 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
     val dims = BoundingBoxUtils.getBBDims(bb)
     val aspectRatio = if (width >0 && height > 0) width.toFloat/height.toFloat else 1.0f
     val maxDims = new Vector3f(
-      math.max( dims.z/aspectRatio, dims.y),
+      Math.max( dims.z/aspectRatio, dims.y),
       Math.max( dims.x/aspectRatio, dims.z),
       Math.max( dims.x/aspectRatio, dims.y)
     )
@@ -464,7 +466,7 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
 
     def positionToViewFrontTheta(distZ: Float, distY: Float, theta: Float) {
       val ry = dims.y/2.0f + distY
-      val rz = dims.x/2.0f + distZ
+      val rz = dims.z/2.0f + distZ
       val camY = centroid.y + ry*math.sin(theta).toFloat
       val camZ = centroid.z - rz*math.cos(theta).toFloat
       val target = centroid
@@ -480,22 +482,34 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
     }
 
     // Position the camera.
-    camPosType match {
+    val dists = _getCameraDistances(camera, bb, dims, maxDim*distanceScale, camPosType)
+    if (camHeightRatio.isDefined) {
+      positionToViewFront(dists.z)
+    } else {
+      positionToViewFrontTheta(dists.z, dists.y, camAngleFromHorizontal.getOrElse(0.0f))
+    }
+    dists
+  }
+
+  private def _getCameraDistances(camera: Camera,
+                                  bb: BoundingBox,
+                                  dims: Vector3f,
+                                  distance: Float,
+                                  camPosType: CameraPositioningStrategy.Value): Vector3f = {
+    val dists = camPosType match {
       case CameraPositioningStrategy.POSITION_TO_FIT => {
-        val dists = getDistsToFit(bb, camera.getWidth(), camera.getHeight(), defaultFov)
-        if (camHeightRatio.isDefined) {
-          positionToViewFront(dists.z)
-        } else {
-          positionToViewFrontTheta(dists.z, dists.y, camAngleFromHorizontal.getOrElse(0.0f))
-        }
-        dists
+        getDistsToFit(bb, camera.getWidth(), camera.getHeight(), defaultFov)
       }
       case CameraPositioningStrategy.POSITION_BY_DISTANCE => {
-        val d = maxDim*distanceScale
-        positionToViewFront(d)
+        val d = distance
         new Vector3f(d,d,d)
       }
+      case CameraPositioningStrategy.POSITION_BY_DISTANCE_TO_CENTROID => {
+        val d = distance
+        new Vector3f(d-dims.x/2.0f,d-dims.y/2.0f,d-dims.z/2.0f)
+      }
     }
+    dists
   }
 
   def generateCameraPositions(camera: Camera,
@@ -524,15 +538,7 @@ class BasicCameraPositioner(val worldUp: Vector3f = JmeUtils.worldUp, val userDa
     }
 
     // Position the camera.
-    val dists = camPosType match {
-      case CameraPositioningStrategy.POSITION_TO_FIT => {
-        getDistsToFit(bb, camera.getWidth(), camera.getHeight(), defaultFov)
-      }
-      case CameraPositioningStrategy.POSITION_BY_DISTANCE => {
-        val d = maxDim*distanceScale
-        new Vector3f(d,d,d)
-      }
-    }
+    val dists = _getCameraDistances(camera, bb, dims, maxDim*distanceScale, camPosType)
     val start = startAngle.getOrElse(0.0f)
     val end = endAngle.getOrElse((math.Pi*2).toFloat + start)
     val phiDelta = (end - start)/nCameras
@@ -591,8 +597,15 @@ case class CameraPositionOptions (
 
 object CameraPositioningStrategy extends Enumeration {
   type CameraPositioningStrategy = Value
-  val POSITION_BY_DISTANCE, POSITION_TO_FIT = Value
+  val POSITION_BY_DISTANCE, POSITION_TO_FIT, POSITION_BY_DISTANCE_TO_CENTROID = Value
   val DEFAULT = POSITION_BY_DISTANCE
+  def apply(name: String): CameraPositioningStrategy.Value = {
+    if (name == "distance") CameraPositioningStrategy.POSITION_BY_DISTANCE
+    else if (name == "fit") CameraPositioningStrategy.POSITION_TO_FIT
+    else if (name == "distance_to_centroid") CameraPositioningStrategy.POSITION_BY_DISTANCE_TO_CENTROID
+    else CameraPositioningStrategy.withName(name)
+  }
+  def names() = Seq("distance", "fit", "distance_to_centroid")
 }
 
 // Generate camera positions for consideration
