@@ -111,7 +111,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   def needFloor: Boolean = config.addFloor
   var floor: Spatial = null
 
-  val screenShotDir = Constants.WORK_SCREENSHOTS_DIR
+  var screenShotDir = Constants.WORK_SCREENSHOTS_DIR
   var screenShotState: ScreenshotAppState = null
   var generateImagesState: GenerateImagesAppState = null
 
@@ -134,7 +134,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
   def falseMaterialBlendOld = config.falseMaterialBlendOld
   def dataManager = jme.dataManager
 
-  var highlightMode = HighlightMode.HighlightSelectedFalseBkOrig
+  def highlightMode = config.highlightMode
 
   val asyncLoading = true
 
@@ -657,7 +657,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       scene.scene.addCamera( camInfo )
     }
     adjustFlyCamSpeed()
-    val directionalLight = jme.addDefaultLights(rootSceneNode, scene.node, getCamera)
+    val directionalLight = jme.addDefaultLights(rootSceneNode, scene.node, getCamera, config.lightColor)
     selections.clear()
     saveCameraState()
 
@@ -1023,7 +1023,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         }
       }
     }
-    this.falseBkMaterial = jme.getSimpleFalseColorMaterial(0.5, 0.5, 0.5)
+    this.falseBkMaterial = jme.getSimpleFalseColorMaterial(config.neutralColor)
 
     modelInfoAppState = new ModelInfoAppState()
     modelInfoAppState.setShowModelLabel(config.showModelLabel)
@@ -1451,10 +1451,10 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
 
   def toggleHighlightMode(mode: HighlightMode.Value = null) {
     if (mode != null) {
-      this.highlightMode = mode
+      config.highlightMode = mode
     } else {
       val v = (this.highlightMode.id + 1) % HighlightMode.maxId
-      this.highlightMode = HighlightMode(v)
+      config.highlightMode = HighlightMode(v)
     }
     for (modelInstance <- scene.modelInstances.filter( m => m != null)) {
       // TODO: si is used for the false material color

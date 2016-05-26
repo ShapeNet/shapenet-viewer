@@ -1,5 +1,6 @@
 package edu.stanford.graphics.shapenet.jme3.viewer
 
+import com.jme3.math.ColorRGBA
 import com.typesafe.config.{ConfigFactory, Config}
 import scala.collection.JavaConversions._
 import edu.stanford.graphics.shapenet.util.ConfigManager
@@ -7,6 +8,7 @@ import edu.stanford.graphics.shapenet.jme3.loaders.LoadFormat
 
 /**
  * Configuration for the viewer
+ *
  * @author Angel Chang
  */
 class ViewerConfig(config: Config) extends ConfigManager(config) {
@@ -16,6 +18,10 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   val height = Option(getIntOption("viewer.height").getOrElse(768))
   val showSettings = getBoolean("viewer.showSettings", false)
   val cacheWebFiles = getBoolean("viewer.cacheWebFiles", true)
+  val neutralColor = getColor("viewer.neutralColor", new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f))
+  val lightColor = getColor("viewer.lightColor", ColorRGBA.White)
+  var highlightMode = getStringOption("viewer.highlightMode").map( x => HighlightMode.withName(x) )
+    .getOrElse(HighlightMode.HighlightSelectedFalseBkOrig)
 
   val modelCacheSize = getIntOption("viewer.modelCacheSize")
   val offscreenMode = getBoolean("viewer.offscreen", false)

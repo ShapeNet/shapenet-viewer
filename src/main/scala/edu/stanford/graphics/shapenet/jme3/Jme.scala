@@ -208,10 +208,11 @@ class Jme(val assetManager: AssetManager,
     getSimpleFalseColorMaterial(c.getRed/255.0, c.getGreen/255.0, c.getBlue/255.0)
   }
 
-  def getSimpleFalseColorMaterial(r: Double, g: Double, b: Double): Material = {
+  def getSimpleFalseColorMaterial(r: Double, g: Double, b: Double, opacity: Double = 1.0): Material = {
     val diffuse = Array(r,g,b)
     val materialInfo = new MaterialInfo(
       diffuse = diffuse,
+      opacity = opacity,
       ambient = diffuse.map( x => x/4),
       specular = Array(0.18, 0.18, 0.18),
       shininess = 64
@@ -220,8 +221,7 @@ class Jme(val assetManager: AssetManager,
   }
 
   def getSimpleFalseColorMaterial(color: ColorRGBA): Material = {
-    val diffuse = color.getColorArray.take(3).map( x => x.toDouble )
-    getSimpleFalseColorMaterial( diffuse(0), diffuse(1), diffuse(2))
+    getSimpleFalseColorMaterial( color.r, color.g, color.b, color.a )
   }
 
   def getSimpleFalseColorMaterial(id: Int): Material = {
@@ -379,18 +379,19 @@ trait JmeUtils {
     } else null
   }
 
-  def addDefaultLights(root: Node, target: Node = null, camera: Camera = null): DirectionalLight = {
+  def addDefaultLights(root: Node, target: Node = null, camera: Camera = null,
+                       color: ColorRGBA = ColorRGBA.White): DirectionalLight = {
     val ambient = new AmbientLight()
-    ambient.getColor.set(ColorRGBA.White).multLocal(0.4f)
+    ambient.getColor.set(color).multLocal(0.4f)
     root.addLight(ambient)
 
     val secondSun = new DirectionalLight() //new PointLight()
     secondSun.setDirection(new Vector3f(-0.5f,0.5f,-0.5f).normalizeLocal())
-    secondSun.getColor.set(ColorRGBA.White).multLocal(0.5f)
+    secondSun.getColor.set(color).multLocal(0.5f)
     root.addLight(secondSun)
     val targetSun = new DirectionalLight() //new PointLight()
     targetSun.setDirection(new Vector3f(0.5f,-1.0f,0.5f).normalizeLocal())
-    targetSun.getColor.set(ColorRGBA.White)
+    targetSun.getColor.set(color)
     root.addLight(targetSun)
     targetSun
   }

@@ -1,5 +1,6 @@
 package edu.stanford.graphics.shapenet.util
 
+import com.jme3.math.ColorRGBA
 import com.typesafe.config.{ConfigFactory, Config}
 import edu.stanford.graphics.shapenet.Constants
 import scala.collection.JavaConversions._
@@ -8,7 +9,8 @@ import java.io.File
 
 /**
  * Config helper
- * @author Angel Chang
+  *
+  * @author Angel Chang
  */
 class ConfigHelper(val config: Config) {
   def getBoolean(s: String, default: Boolean = false) =
@@ -38,6 +40,15 @@ class ConfigHelper(val config: Config) {
 
   def getStringList(s: String, default: Seq[String] = null) =
     if (config.hasPath(s)) config.getStringList(s).map( x => x.toString ) else default
+
+  def getColor(s: String, default: ColorRGBA = null) =
+    if (config.hasPath(s)) {
+      val colorStr = config.getString(s)
+      val c = java.awt.Color.decode(colorStr)
+      new ColorRGBA(c.getRed/255.0f, c.getGreen/255.0f, c.getBlue/255.0f, c.getAlpha/255.0f)
+    } else {
+      default
+    }
 }
 
 trait MutableConfigHelper {
