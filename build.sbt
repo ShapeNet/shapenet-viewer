@@ -8,6 +8,9 @@ exportJars := true
 
 publishTo := Some("dovahkiin" at "https://dovahkiin.stanford.edu/artifactory/repo")
 
+// JMonkeyEngine https://bintray.com/jmonkeyengine/org.jmonkeyengine
+resolvers += "bintray-jmonkeyengine-org.jmonkeyengine" at "http://dl.bintray.com/jmonkeyengine/org.jmonkeyengine"
+
 // Nifty for jme3 3.1.0-SNAPSHOT
 resolvers += "nifty-maven-repo.sourceforge.net" at "http://nifty-gui.sourceforge.net/nifty-maven-repo"
 
