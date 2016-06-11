@@ -8,8 +8,6 @@ exportJars := true
 
 publishTo := Some("dovahkiin" at "https://dovahkiin.stanford.edu/artifactory/repo")
 
-resolvers += "jme3" at "http://updates.jmonkeyengine.org/maven"
-
 // Nifty for jme3 3.1.0-SNAPSHOT
 resolvers += "nifty-maven-repo.sourceforge.net" at "http://nifty-gui.sourceforge.net/nifty-maven-repo"
 
@@ -37,13 +35,13 @@ libraryDependencies := {
 libraryDependencies ++= Seq(
   // Stuff from jmonkey engine maven (see http://wiki.jmonkeyengine.org/doku.php/jme3:maven)
   // other ones to include? networking, jogg, terrain, blender
-  "com.jme3" % "jme3-core" % "3.0.10",
-  "com.jme3" % "jme3-plugins" % "3.0.10",
-  "com.jme3" % "jme3-effects" % "3.0.10",
-  "com.jme3" % "jme3-jbullet" % "3.0.10",
-  "com.jme3" % "jme3-niftygui" % "3.0.10",
-  "com.jme3" % "jme3-desktop" % "3.0.10",
-  "com.jme3" % "jme3-lwjgl" % "3.0.10",
+  "org.jmonkeyengine" % "jme3-core" % "3.1.0-beta1",
+  "org.jmonkeyengine" % "jme3-plugins" % "3.1.0-beta1",
+  "org.jmonkeyengine" % "jme3-effects" % "3.1.0-beta1",
+  //"org.jmonkeyengine" % "jme3-jbullet" % "3.1.0-beta1",
+  "org.jmonkeyengine" % "jme3-niftygui" % "3.1.0-beta1",
+  "org.jmonkeyengine" % "jme3-desktop" % "3.1.0-beta1",
+  "org.jmonkeyengine" % "jme3-lwjgl" % "3.1.0-beta1",
   "org.bushe" % "eventbus" % "1.4",
   // For ply loading
   "org.smurn" % "jply" % "0.2.0",

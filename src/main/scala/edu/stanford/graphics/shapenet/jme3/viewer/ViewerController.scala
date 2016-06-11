@@ -7,8 +7,7 @@ import de.lessvoid.nifty.elements.Element
 import de.lessvoid.nifty.controls.{TextField, Console}
 import de.lessvoid.nifty.elements.render.TextRenderer
 import de.lessvoid.nifty.tools.SizeValue
-import de.lessvoid.nifty.input.NiftyInputEvent
-
+import de.lessvoid.nifty.input.{NiftyStandardInputEvent, NiftyInputEvent}
 /**
  * Nifty GUI controller for viewer
  * @author Angel Chang
@@ -70,7 +69,7 @@ class ViewerController(val viewer: Viewer, val nifty: Nifty)
 
   @NiftyEventSubscriber(id = "loadTarget")
   def onLoadTargetTextFieldInputEvent(id: String, event: NiftyInputEvent) {
-    if (NiftyInputEvent.SubmitText.equals(event)) {
+    if (NiftyStandardInputEvent.SubmitText.equals(event)) {
       loadPressed()
     }
   }

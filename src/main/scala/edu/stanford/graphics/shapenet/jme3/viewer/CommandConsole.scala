@@ -56,7 +56,7 @@ class CommandConsole(val controller: ViewerController,
     // TODO: Make this more generic...
     val args = str.split(" +")
     val command = consoleCommands.findCommand(args(0))
-    command.execute(args)
+    command.execute(args:_*)
   }
 
   private class LoadCommand extends BasicConsoleCommand {
@@ -419,7 +419,11 @@ class CommandConsole(val controller: ViewerController,
     def extendedDescription: String = description
     def executeImpl(args: Array[String])  // Please implement me!!!
 
-    override def execute(args: Array[String]) {
+    override def execute(strings: String*): Unit = {
+      this.executeWrapper(strings.toArray)
+    }
+
+    def executeWrapper(args: Array[String]) {
       // Guard against exception - no exception doesn't mean program will proceed normally though
       // Save our history...
       val name = args(0)

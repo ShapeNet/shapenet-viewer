@@ -161,7 +161,7 @@ class Jme(val assetManager: AssetManager,
               val vnew = pnew.getValue.asInstanceOf[ColorRGBA]
               val vold = pold.getValue.asInstanceOf[ColorRGBA]
               val colornew = new ColorRGBA()
-              colornew.interpolate(vnew, vold, blendOld)
+              colornew.interpolateLocal(vnew, vold, blendOld)
               newMat.setColor(p, colornew)
             }
           }
@@ -255,9 +255,7 @@ class Jme(val assetManager: AssetManager,
 
   def bbToSpatial(bb: BoundingBox, wirebox: Boolean = false, color: ColorRGBA = ColorRGBA.White): Spatial = {
     if (wirebox) {
-      val wb = new WireBox()
-      wb.fromBoundingBox(bb)
-      val bbNode = new Geometry("bb",wb)
+      val bbNode = WireBox.makeGeometry(bb)
       val mat = getWireFrameMaterial(color)
       bbNode.setMaterial(mat)
       bbNode.setLocalTranslation(bb.getCenter)
@@ -588,9 +586,7 @@ trait JmeUtils {
 
   def bbToSpatialNoMaterial(bb: BoundingBox, wirebox: Boolean = false): Spatial = {
     if (wirebox) {
-      val wb = new WireBox()
-      wb.fromBoundingBox(bb)
-      val bbNode = new Geometry("bb",wb)
+      val bbNode = WireBox.makeGeometry(bb)
       bbNode.setLocalTranslation(bb.getCenter)
       updateNode(bbNode)
       bbNode
