@@ -94,13 +94,17 @@ object CameraInfo {
     val newDirection = new Vector3f()
     val newUp = new Vector3f()
     val newLeft = new Vector3f()
+    val d = 0.0000000001
     newDirection.set(target).subtractLocal(position).normalizeLocal
     newUp.set(worldUpVector).normalizeLocal
-    if (newUp == Vector3f.ZERO) newUp.set(Vector3f.UNIT_Y)
+    if (newUp.distanceSquared(Vector3f.ZERO) < d) newUp.set(Vector3f.UNIT_Y)
     newLeft.set(newUp).crossLocal(newDirection).normalizeLocal
-    if (newLeft == Vector3f.ZERO) if (newDirection.x != 0) newLeft.set(newDirection.y, -newDirection.x, 0f)
-    else newLeft.set(0f, newDirection.z, -newDirection.y)
+    if (newLeft.distanceSquared(Vector3f.ZERO) < d) {
+      if (newDirection.x != 0) newLeft.set(newDirection.y, -newDirection.x, 0f)
+      else newLeft.set(0f, newDirection.z, -newDirection.y)
+    }
     newUp.set(newDirection).crossLocal(newLeft).normalizeLocal
+    // println("up: " + newUp.toString() + ", left: " + newLeft.toString() + ", dir: " + newDirection.toString())
     (newUp, newDirection)
   }
 }
