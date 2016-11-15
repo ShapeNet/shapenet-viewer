@@ -71,7 +71,8 @@ case class CameraInfo(name: String,  // name of camera (indicates what it is for
   assert(direction != null || target != null)
 
   def withDirection: CameraInfo = if (direction == null) {
-    CameraInfo(name, position, up, CameraInfo.getDirection(position, target), target, targetObjectIndices)
+    val newUpDir = CameraInfo.lookAt(position, target, up)
+    CameraInfo(name, position, newUpDir._1, newUpDir._2, target, targetObjectIndices)
   } else {
     this
   }
@@ -89,4 +90,17 @@ object CameraInfo {
     } else { dir }
   }
 
+  private def lookAt(position: Vector3f, target: Vector3f, worldUpVector: Vector3f) = {
+    val newDirection = new Vector3f()
+    val newUp = new Vector3f()
+    val newLeft = new Vector3f()
+    newDirection.set(target).subtractLocal(position).normalizeLocal
+    newUp.set(worldUpVector).normalizeLocal
+    if (newUp == Vector3f.ZERO) newUp.set(Vector3f.UNIT_Y)
+    newLeft.set(newUp).crossLocal(newDirection).normalizeLocal
+    if (newLeft == Vector3f.ZERO) if (newDirection.x != 0) newLeft.set(newDirection.y, -newDirection.x, 0f)
+    else newLeft.set(0f, newDirection.z, -newDirection.y)
+    newUp.set(newDirection).crossLocal(newLeft).normalizeLocal
+    (newUp, newDirection)
+  }
 }
