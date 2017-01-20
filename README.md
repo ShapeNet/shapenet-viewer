@@ -85,6 +85,11 @@ You can display ShapeNetSem models using the `wss` prefix.
       load model wss.1a4216ac5ffbf1e89c7ce4b816b39bd0
       load model random wss chair
 
+Batch Rendering with the ShapeNet Viewer
+===========================
+
+The viewer can take in scripts in a given `.conf` file to perform batch rendering tasks.  See the examples in the `conf` directory, and particulary the `batch-render-example.conf` file.
+
 Contact
 =======
 
