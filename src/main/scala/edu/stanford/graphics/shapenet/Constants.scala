@@ -30,7 +30,7 @@ trait Constants {
   val WEB_CACHE_DIR = CACHE_DIR + "web" + File.separator
 
   val SHAPENET_VIEWER_DIR = ensureDir(prop("SHAPENET_VIEWER_DIR", CODE_DIR + "shapenet-viewer"))
-  val SHAPENET_HOST = prop("SHAPENET_HOST", "http://shapenet.cs.stanford.edu")
+  val SHAPENET_HOST = prop("SHAPENET_HOST", "https://www.shapenet.org")
   val ASSETS_DIR = ensureDir(prop("ASSETS_DIR", SHAPENET_VIEWER_DIR + "/assets"))
   val MISC_DATA_HOST = prop("DATA_HOST", "http://dovahkiin.stanford.edu")
   val TEXT2SCENE_DIR = if (USE_LOCAL_DATA) DATA_DIR + "text2scene" + separator else MISC_DATA_HOST + "/text2scene/"
@@ -84,9 +84,9 @@ trait Constants {
 
   val DEBUG_DIR = WORK_DIR + "debug" + File.separator
 
-  val ARCHIVE3D_DATA_DIR = SHAPENET_HOST + "/archive3d/data/"
-  val WSS_DATA_DIR = SHAPENET_HOST + "/wss/data/"
-  val VF_DATA_DIR = SHAPENET_HOST + "/vf/data/"
+  val ARCHIVE3D_DATA_DIR = SHAPENET_HOST + "/data/archive3d/"
+  val WSS_DATA_DIR = SHAPENET_HOST + "/data/wss/"
+  val VF_DATA_DIR = SHAPENET_HOST + "/data/vf/"
   val SHAPENET_DATA_DIR = SHAPENET_HOST + "/shapenet/data/"
   val YOBI3D_DATA_DIR = SHAPENET_HOST + "/shapenet/data/"
   val WSS_OBJ_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/models/" else MISC_DATA_HOST + "/g3dw/models/"
@@ -94,8 +94,8 @@ trait Constants {
   val WSS_TEXTURE_DIR = if (USE_LOCAL_DATA) "/models/repositories/g3dw/textures/" else MISC_DATA_HOST + "/g3dw/textures/"
 
   // Models and scenes solr configuration
-  val MODELS3D_SOLR_URL = SHAPENET_HOST + "/models3d/solr"
-  val SCENES_SOLR_URL = SHAPENET_HOST + "/scenes/solr"
+  val MODELS3D_SOLR_URL = SHAPENET_HOST + "/solr/models3d"
+  val SCENES_SOLR_URL = SHAPENET_HOST + "/solr/scenes"
 
   // Constants for scenes
   val SCENES_DIR = DATA_DIR + "scenes" + File.separator
