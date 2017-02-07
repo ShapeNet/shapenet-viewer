@@ -300,14 +300,28 @@ public final class OBJLoader implements AssetLoader {
       Vertex vx = new Vertex();
       vx.v = verts.get(v - 1);
       if (vertColors.size() > 0) {
-        vx.vc = vertColors.get(v - 1);
+        if (v - 1 < vertColors.size()) {
+          vx.vc = vertColors.get(v - 1);
+        } else {
+          logger.warning("Invalid v color index reference for " + line);
+        }
       }
 
-      if (vt > 0)
-        vx.vt = texCoords.get(vt - 1);
+      if (vt > 0) {
+        if (vt - 1 < texCoords.size()) {
+          vx.vt = texCoords.get(vt - 1);
+        } else {
+          logger.warning("Invalid vt index reference for " + line);
+        }
+      }
 
-      if (vn > 0)
-        vx.vn = norms.get(vn - 1);
+      if (vn > 0) {
+        if (vn - 1 < norms.size()) {
+          vx.vn = norms.get(vn - 1);
+        } else {
+          logger.warning("Invalid vn index reference for " + line);
+        }
+      }
 
       vertList.add(vx);
     }
