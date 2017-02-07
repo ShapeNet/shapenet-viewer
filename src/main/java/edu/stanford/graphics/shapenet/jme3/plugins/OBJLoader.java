@@ -34,6 +34,7 @@ package edu.stanford.graphics.shapenet.jme3.plugins;
 import com.jme3.asset.*;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialList;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
@@ -51,6 +52,7 @@ import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import edu.stanford.graphics.shapenet.jme3.asset.EnhancedAssetKey;
 import edu.stanford.graphics.shapenet.jme3.asset.EnhancedModelKey;
+import jme3dae.utilities.NormalGenerator;
 
 import java.io.File;
 import java.io.IOException;
@@ -528,7 +530,14 @@ public final class OBJLoader implements AssetLoader {
         material.setBoolean("VertexColor", true);
       } else {
         material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        ColorRGBA color = new ColorRGBA(0.7F, 0.7F, 0.7F, 1.0F);
+        material.setColor("Diffuse", color);
+        material.setColor("Ambient", color);
         material.setFloat("Shininess", 64);
+      }
+      if (mesh.getFloatBuffer(Type.Normal) == null) {
+        NormalGenerator ng = NormalGenerator.create();
+        ng.generateNormals(mesh);
       }
     }
     geom.setMaterial(material);
