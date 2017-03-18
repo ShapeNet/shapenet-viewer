@@ -425,7 +425,7 @@ class GenerateImagesAppState(val viewer: Viewer,
       filenameBase
     } else {
       val filename = if (imageFilenameUseFullId) FullId(id).fullid else {
-        FullId(id).id
+        IOUtils.getFilename(FullId(id).id)
       }
       screenShotDir + filename
     }

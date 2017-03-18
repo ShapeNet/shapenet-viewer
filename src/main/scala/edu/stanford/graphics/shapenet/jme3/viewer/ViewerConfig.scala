@@ -119,6 +119,10 @@ class ViewerConfig(config: Config) extends ConfigManager(config) {
   // ambient occlusion
   var useAmbientOcclusion = getBoolean("viewer.useAmbientOcclusion", true)
 
+  var modelScreenShotDir = getStringOption("viewer.modelScreenshotDir")
+  registerMutable("modelScreenshotDir", "Model screenshots base directory",
+    x => modelScreenShotDir.getOrElse(""), s => modelScreenShotDir = Option(s))
+
   //  registerMutable("autoAlign", "Auto align scenes or not",
 //    s => autoAlign = ConfigHelper.parseBoolean(s), supportedValues = Seq("on", "off") /*ConfigHelper.getSupportedBooleanStrings */
 //  )

@@ -210,6 +210,10 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
         jme.defaultLoadFormat = config.loadFormat
         jme.assetLoader.defaultLoadFormat = config.loadFormat
       })
+    config.registerMutable("screenshotDir", "Set base directory to save screenshots",
+      x => screenShotDir, s => {
+        screenShotDir = s + "/"
+      })
   }
 
   def hideMenu() {
@@ -873,6 +877,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
             fullId.source + File.separator + fullId.id + File.separator
           }
         }
+        case "raw" => ""
         case _ => fullId.source + File.separator + fullId.id + File.separator
       }
 
@@ -894,7 +899,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
       new RotatingCameraPositionGenerator(cam, cameraPositionOptions, nPositions = config.nImagesPerModel)
     }
     sceneImagesGen.configCameraPositions(cameraPositionGenerator)
-    sceneImagesGen.process(modelIds, outputDir.getOrElse(screenShotDir + "models" + File.separator))
+    sceneImagesGen.process(modelIds, outputDir.getOrElse(config.modelScreenShotDir.getOrElse(screenShotDir + "models" + File.separator)))
   }
 
   def saveModelStats(modelIds: Iterable[String], filename: String, appendToExisting: Boolean = false): Unit = {
