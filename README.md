@@ -54,7 +54,13 @@ Or you can start a batch process to render all screenshots using:
 
 where `<category>` can optionally specify a specific category subset (e.g., `chair`).
 
-All screenshots are saved to `$WORK_DIR/screenshots/models` or `$WORK_DIR/screenshots/modelsByCategory/<category>` if the category specifier was used.  Ordering of models rendered in a batch is randomized by default, and existing screenshots are not re-rendered (so it is safe to restart the process without regnerating existing screenshots).  A few important parameters that control the screenshot rendering are given below (along with their default values). These can be set using the command `set <paramName> <value>` or by adding `viewer.<paramName> = <value>` to the `.conf` file:
+All screenshots are saved to `$WORK_DIR/screenshots/models` or `$WORK_DIR/screenshots/modelsByCategory/<category>` if the category specifier was used.  If you want to manually specify the base output directory for screenshots use the command:
+
+      set modelScreenshotDir <path>
+
+Any following `save model screenshots` commands will save files under the given path.
+
+Ordering of models rendered in a batch is randomized by default, and existing screenshots are not re-rendered (so it is safe to restart the process without regnerating existing screenshots).  A few important parameters that control the screenshot rendering are given below (along with their default values). These can be set using the command `set <paramName> <value>` or by adding `viewer.<paramName> = <value>` to the `.conf` file:
 
 - `nImagesPerModel = 8` : how many equally-spaced turntable positions (increments of the camera azimuth angle) to render
 - `cameraAngleFromHorizontal = 30` : camera elevation in degrees from horizontal (ground) plane
