@@ -26,16 +26,17 @@ public final class JmeSystemMod {
         final DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
         final int[] cpuArray = db.getData();
         for (int i = 0; i < cpuArray.length; i++) {
+            int p = cpuArray[i];
             // Fix alpha channel (set to 0 for complete transparency)
-            if (cpuArray[i] == -1) {
-                cpuArray[i] &= 0x00ffffff;
+            if (p == -1) {
+                p &= 0x00ffffff;
             } else {
-                // ABGR to ARGB
-                int p = cpuArray[i];
-                int b = p >> 16 & 0xff;
-                int r = p & 0xff;
-                cpuArray[i] = (p & 0xff00ff00) | r << 16 | b;
+                // Convert ABGR to ARGB
+                final int b = p >> 16 & 0xff;
+                final int r = p & 0xff;
+                p = (p & 0xff00ff00) | r << 16 | b;
             }
+            cpuArray[i] = p;
         }
     }
 
