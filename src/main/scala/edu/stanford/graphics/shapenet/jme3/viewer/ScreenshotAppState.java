@@ -201,7 +201,7 @@ public class ScreenshotAppState extends AbstractAppState implements ActionListen
       OutputStream outStream = null;
       try {
         outStream = new FileOutputStream(file);
-        JmeSystem.writeImageFile(outStream, imageFormat, outBuf, width, height);
+        JmeSystemMod.writeImageFile(outStream, imageFormat, outBuf, width, height);
         logger.log(Level.INFO, "Saved ScreenShot to: " + file.getAbsolutePath());
       } catch (IOException ex) {
         logger.log(Level.SEVERE, "Error while saving screenshot", ex);
