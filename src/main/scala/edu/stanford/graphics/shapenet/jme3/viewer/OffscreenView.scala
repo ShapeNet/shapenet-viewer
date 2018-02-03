@@ -89,7 +89,7 @@ class OffscreenView(val renderManager: RenderManager,
     logger.info("Saving offscreen view to: {0}", file.getAbsolutePath())
     try {
       outStream = IOUtils.fileOutputStream(filename)
-      JmeSystem.writeImageFile(outStream, imageFormat, outBuf, width, height)
+      JmeSystemMod.writeImageFile(outStream, imageFormat, outBuf, width, height)
     } catch {
       case ex: IOException => {
         logger.error("Error while saving offscreen view", ex)
