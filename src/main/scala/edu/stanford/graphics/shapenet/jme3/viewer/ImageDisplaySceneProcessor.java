@@ -8,7 +8,7 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.system.*;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.util.BufferUtils;
-import com.jme3.util.Screenshots;
+import edu.stanford.graphics.shapenet.util.ImageWriter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -17,12 +17,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
 
 /**
  * Screen Processor for displaying an rendered image
@@ -141,7 +138,7 @@ public class ImageDisplaySceneProcessor implements SceneProcessor {
   // updates the actual image we see
   private void showUpdate() {
     synchronized (image) {
-      Screenshots.convertScreenShot(cpuBuf, image);
+      ImageWriter.rgbaToabgr(cpuBuf, image);
     }
 
     if (display != null)

@@ -1,14 +1,13 @@
 package edu.stanford.graphics.shapenet.jme3.viewer
 
 import edu.stanford.graphics.shapenet.common.CameraState
-import edu.stanford.graphics.shapenet.util.{IOUtils, Loggable}
-import com.jme3.math.{Vector3f, Transform, ColorRGBA}
+import edu.stanford.graphics.shapenet.util.{IOUtils, ImageWriter, Loggable}
+import com.jme3.math.{ColorRGBA, Transform, Vector3f}
 import com.jme3.post.SceneProcessor
-import com.jme3.renderer.{RenderManager, Camera}
+import com.jme3.renderer.{Camera, RenderManager}
 import com.jme3.scene.{Node, Spatial}
 import com.jme3.texture.FrameBuffer
 import com.jme3.texture.Image.Format
-import com.jme3.system.JmeSystem
 import com.jme3.util.BufferUtils
 import java.io.{File, IOException, OutputStream}
 
@@ -89,7 +88,7 @@ class OffscreenView(val renderManager: RenderManager,
     logger.info("Saving offscreen view to: {0}", file.getAbsolutePath())
     try {
       outStream = IOUtils.fileOutputStream(filename)
-      JmeSystem.writeImageFile(outStream, imageFormat, outBuf, width, height)
+      ImageWriter.writeImageFile(outStream, imageFormat, outBuf, width, height)
     } catch {
       case ex: IOException => {
         logger.error("Error while saving offscreen view", ex)

@@ -1008,7 +1008,7 @@ class Viewer(val config: ViewerConfig = ViewerConfig()) extends SimpleApplicatio
     val shotIndexStart = IOUtils.getMaxIdForRegex(screenShotDir, "Viewer(\\d+).png")
     screenShotState = new ScreenshotAppState(screenShotDir)
     screenShotState.setShotIndex(shotIndexStart)
-    generateImagesState = new GenerateImagesAppState(this, screenShotDir)
+    generateImagesState = new OffscreenGenerateImagesAppState(this, screenShotDir)
 
     // Turn off display of stats and fps
     this.setDisplayStatView(false)

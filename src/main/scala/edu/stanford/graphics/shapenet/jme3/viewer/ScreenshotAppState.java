@@ -48,6 +48,7 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.system.JmeSystem;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.util.BufferUtils;
+import edu.stanford.graphics.shapenet.util.ImageWriter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -201,7 +202,7 @@ public class ScreenshotAppState extends AbstractAppState implements ActionListen
       OutputStream outStream = null;
       try {
         outStream = new FileOutputStream(file);
-        JmeSystem.writeImageFile(outStream, imageFormat, outBuf, width, height);
+        ImageWriter.writeImageFile(outStream, imageFormat, outBuf, width, height);
         logger.log(Level.INFO, "Saved ScreenShot to: " + file.getAbsolutePath());
       } catch (IOException ex) {
         logger.log(Level.SEVERE, "Error while saving screenshot", ex);

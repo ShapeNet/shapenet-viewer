@@ -292,6 +292,7 @@ class GenerateImagesAppState(val viewer: Viewer,
             if (item.camera != null) {
               viewer.setCamera(item.camera)
             }
+            onViewReady();
             item.state = ScreenShotState.TAKE_SHOT
           }
           case ScreenShotState.TAKE_SHOT => {
@@ -455,6 +456,26 @@ class GenerateImagesAppState(val viewer: Viewer,
 
   override def cleanup() {
     _closeSummaryFile()
+  }
+
+  // For OffscreenGenerateImagesAppState to override
+  def onViewReady() {}
+}
+
+class OffscreenGenerateImagesAppState(viewer: Viewer,
+                                      screenShotDir: String,
+                                      nObjects: Int = 0) extends GenerateImagesAppState(viewer, screenShotDir, nObjects)  {
+
+  private var offscreenView: OffscreenView = null
+
+  override def onViewReady(): Unit = {
+    offscreenView = viewer.getOffScreen
+    offscreenView.viewScene(viewer.rootSceneNode.clone())
+    offscreenView.setCamera(viewer.getCamera)
+  }
+
+  override def takeScreenshot(filename: String): Unit = {
+    offscreenView.saveImage(filename)
   }
 
 }
